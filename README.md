@@ -5,4 +5,4 @@ An OpenStack validator for the deployment of chef recipes implemented as a servi
 ## Getting Started
 To run the code you can clone the git repo with:
 
-    git clone git@github.com:ging/chef_validator.git
+    git clone git@github.com:ging/fi-ware-chef_validator.git
