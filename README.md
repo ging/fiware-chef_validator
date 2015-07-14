@@ -1,4 +1,4 @@
-# fi-ware-chef_validator
+# FI-Ware Chef Validator
 
 An OpenStack validator for the deployment of chef recipes implemented as a service with an OpenStack-native Rest API
  
