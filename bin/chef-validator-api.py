@@ -11,12 +11,32 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
+from __future__ import unicode_literals
+import os
+import sys
+import six
 
 import oslo_i18n as i18n
+from oslo_log import log as logging
+
+
 from chef_validator.common.i18n import _LI
+
+# If ../chef_validator/__init__.py exists, add ../ to Python search path, so that
+# it will override what happens to be installed in /usr/(local/)lib/python...
+root = os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir)
+if os.path.exists(os.path.join(root, 'chef_validator', '__init__.py')):
+    sys.path.insert(0, root)
 
 i18n.enable_lazy()
 
-if __name__ == '__main__':
-    print _LI('Starting Chef Validator Rest API')
+LOG = logging.getLogger('chef_validator.api')
 
+if __name__ == '__main__':
+    try:
+        # logging.register_options(None)
+        # logging.setup(None, 'chef_validator_api')
+        LOG.info(_LI('Starting Chef Validator Rest API'))
+    except RuntimeError as e:
+        msg = six.text_type(e)
+        sys.exit("ERROR: %s" % msg)
