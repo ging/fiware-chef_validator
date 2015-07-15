@@ -47,7 +47,6 @@ coverage.xml
 
 # Translations
 *.mo
-*.pot
 
 # Django stuff:
 *.log
@@ -67,5 +66,8 @@ target/
 ## Directory-based project format:
 .idea/
 
+## System Dependant Helpers
+tools/*.bat
 
-
+# local configuration
+etc/chef_validator/*.conf

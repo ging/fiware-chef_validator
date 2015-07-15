@@ -11,6 +11,11 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
+
+"""
+Chef Validator API Server. An OpenStack ReST API to Validate Chef Recipes.
+"""
+
 from __future__ import unicode_literals
 import os
 import sys
@@ -19,8 +24,8 @@ import six
 import oslo_i18n as i18n
 from oslo_log import log as logging
 
-
 from chef_validator.common.i18n import _LI
+from chef_validator.common import config
 
 # If ../chef_validator/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -31,12 +36,15 @@ if os.path.exists(os.path.join(root, 'chef_validator', '__init__.py')):
 i18n.enable_lazy()
 
 LOG = logging.getLogger('chef_validator.api')
+CONF = config.CONF
 
 if __name__ == '__main__':
     try:
-        # logging.register_options(None)
-        # logging.setup(None, 'chef_validator_api')
-        LOG.info(_LI('Starting Chef Validator Rest API'))
+        logging.register_options(CONF)
+        config.parse_args()
+        logging.setup(CONF, 'chef_validator_api')
+        port, host = (CONF.bind_port, CONF.bind_host)
+        LOG.info(_LI('Starting Chef Validator ReST API on %(host)s:%(port)s'), {'host': host, 'port': port})
     except RuntimeError as e:
         msg = six.text_type(e)
         sys.exit("ERROR: %s" % msg)
