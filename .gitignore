@@ -57,7 +57,6 @@ docs/_build/
 # PyBuilder
 target/
 
-
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion
 
@@ -71,3 +70,8 @@ tools/*.bat
 
 # local configuration
 etc/chef_validator/*.conf
+
+# Runtime Built Documentation
+doc/make.bat
+doc/Makefile
+doc/build
