@@ -23,6 +23,7 @@ import six
 
 import oslo_i18n as i18n
 from oslo_log import log as logging
+from oslo_service import service
 
 from chef_validator.common.i18n import _LI
 from chef_validator.common import config
@@ -43,8 +44,15 @@ if __name__ == '__main__':
         logging.register_options(CONF)
         config.parse_args()
         logging.setup(CONF, 'chef_validator_api')
+
+        app = config.load_paste_app('chef_validator')
         port, host = (CONF.bind_port, CONF.bind_host)
         LOG.info(_LI('Starting Chef Validator ReST API on %(host)s:%(port)s'), {'host': host, 'port': port})
+        launcher = service.ServiceLauncher(CONF)
+        # server = wsgi.Service(app, port, host)
+        # launcher.launch_service(server)
+        # server.start(app, default_port=port)
+        # server.wait()
     except RuntimeError as e:
         msg = six.text_type(e)
         sys.exit("ERROR: %s" % msg)
