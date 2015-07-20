@@ -27,6 +27,7 @@ from oslo_service import service
 
 from chef_validator.common.i18n import _LI
 from chef_validator.common import config
+from chef_validator.common import wsgi
 
 # If ../chef_validator/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -49,10 +50,10 @@ if __name__ == '__main__':
         port, host = (CONF.bind_port, CONF.bind_host)
         LOG.info(_LI('Starting Chef Validator ReST API on %(host)s:%(port)s'), {'host': host, 'port': port})
         launcher = service.ServiceLauncher(CONF)
-        # server = wsgi.Service(app, port, host)
-        # launcher.launch_service(server)
-        # server.start(app, default_port=port)
-        # server.wait()
+        server = wsgi.Service(app, port, host)
+        launcher.launch_service(server)
+        server.start()
+        server.wait()
     except RuntimeError as e:
         msg = six.text_type(e)
         sys.exit("ERROR: %s" % msg)
