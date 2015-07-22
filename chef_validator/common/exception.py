@@ -53,7 +53,3 @@ class MalformedRequestBody(OpenstackException):
 
 class TimeoutException(Exception):
     pass
-
-
-class PolicyViolationException(Exception):
-    pass

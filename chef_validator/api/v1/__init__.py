@@ -13,5 +13,5 @@ class API(wsgi.Router):
         self.conf = conf
         mapper = routes.Mapper()
         actions_resource = actions.create_resource()
-        mapper.connect('/recipes', controller=actions_resource, action='execute', conditions={'method': ['POST']})
+        mapper.connect('/recipes', controller=actions_resource, action='validate', conditions={'method': ['POST']})
         super(API, self).__init__(mapper)

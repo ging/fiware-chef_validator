@@ -16,3 +16,9 @@ oslo.config
 oslo.service
 
 keystonemiddleware
+
+#testing
+fixtures
+testtools
+nose
+mock

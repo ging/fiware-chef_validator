@@ -37,8 +37,8 @@ from oslo_serialization import jsonutils
 from oslo_utils import importutils
 from oslo_config import cfg
 
-from chef_validator.common import exceptions
-from chef_validator.common.i18n import _
+from chef_validator.common import exception
+from chef_validator.common.i18n import _, _LW
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -177,12 +177,11 @@ class Request(webob.Request):
         allowed_content_types = (allowed_content_types or self.default_request_content_types)
 
         if content_type not in allowed_content_types:
-            raise exceptions.InvalidContentType(content_type=content_type)
+            raise exception.InvalidContentType(content_type=content_type)
         return content_type
 
 
-class ActionDispatcher(object):
-    """Maps method name to local methods through action name."""
+class JSONDeserializer(object):
 
     def dispatch(self, *args, **kwargs):
         """Find and call local method."""
@@ -190,33 +189,30 @@ class ActionDispatcher(object):
         action_method = getattr(self, str(action), self.default)
         return action_method(*args, **kwargs)
 
-    def default(self, data):
-        raise NotImplementedError()
+    def deserialize(self, request, action='default'):
+        return self.dispatch(request, action=action)
+
+    @staticmethod
+    def default(request):
+        try:
+            return {'body': jsonutils.loads(request.body)}
+        except ValueError:
+            raise exception.MalformedRequestBody(reason=_("cannot understand JSON"))
 
 
-class DictSerializer(ActionDispatcher):
-    """Default request body serialization."""
+class JSONSerializer(object):
 
-    def serialize(self, data, action='default'):
-        return self.dispatch(data, action=action)
+    @staticmethod
+    def default(response, result):
+        response.content_type = 'application/json'
 
-    def default(self, data):
-        return ""
-
-
-class JSONDictSerializer(DictSerializer):
-    """Default JSON request body serialization."""
-
-    def default(self, data, result=None):
         def sanitizer(obj):
             if isinstance(obj, datetime.datetime):
-                _dtime = obj - datetime.timedelta(microseconds=obj.microsecond)
-                return _dtime.isoformat()
-            return unicode(obj)
+                return obj.isoformat()
+            return obj
 
-        if result:
-            data.body = jsonutils.dumps(result)
-        return jsonutils.dumps(data, default=sanitizer)
+        response.body = jsonutils.dumps(result, default=sanitizer)
+        LOG.debug("JSON response : %s" % response)
 
 
 class Resource(object):
@@ -245,27 +241,38 @@ class Resource(object):
                            through controller-like actions
         """
         self.controller = controller
-        self.serializer = serializer
-        self.deserializer = deserializer
+        self.deserializer = deserializer or JSONDeserializer()
+        self.serializer = serializer or JSONSerializer()
 
     @webob.dec.wsgify(RequestClass=Request)
     def __call__(self, request):
         """WSGI method that controls (de)serialization and method dispatch."""
 
         try:
-            action, action_args, accept = self.deserialize_request(request)
-        except exceptions.InvalidContentType:
+            action_args = self.get_action_args(request.environ)
+            action = action_args.pop('action', None)
+            deserialized_request = self.deserialize_request(request)
+            action_args.update(deserialized_request)
+        except exception.InvalidContentType:
             msg = _("Unsupported Content-Type")
             return webob.exc.HTTPUnsupportedMediaType(explanation=msg)
-        except exceptions.MalformedRequestBody:
+        except exception.MalformedRequestBody:
             msg = _("Malformed request body")
             return webob.exc.HTTPBadRequest(explanation=msg)
 
         action_result = self.execute_action(action, request, **action_args)
+
         try:
-            return self.serialize_response(action, action_result, accept)
+            response = webob.Response(request=request)
+            self.dispatch(self.serializer, action, response, action_result)
+            return response
         # return unserializable result (typically a webob exc)
         except Exception:
+            try:
+                err_body = action_result.get_unserialized_body()
+                self.serializer.default(action_result, err_body)
+            except Exception:
+                LOG.warning(_LW("Unable to serialize exception response"))
             return action_result
 
     def deserialize_request(self, request):
@@ -277,32 +284,25 @@ class Resource(object):
     def execute_action(self, action, request, **action_args):
         return self.dispatch(self.controller, action, request, **action_args)
 
-    def dispatch(self, obj, action, *args, **kwargs):
+    @staticmethod
+    def dispatch(obj, action, *args, **kwargs):
         """Find action-specific method on self and call it."""
         try:
             method = getattr(obj, action)
         except AttributeError:
             method = getattr(obj, 'default')
-
         return method(*args, **kwargs)
 
-    def get_action_args(self, request_environment):
+    @staticmethod
+    def get_action_args(request_environment):
         """Parse dictionary created by routes library."""
+        args = {}
         try:
             args = request_environment['wsgiorg.routing_args'][1].copy()
         except Exception:
-            return {}
-
-        try:
+            pass
+        if 'controller' in args.keys():
             del args['controller']
-        except KeyError:
-            pass
-
-        try:
-            del args['format']
-        except KeyError:
-            pass
-
         return args
 
 
