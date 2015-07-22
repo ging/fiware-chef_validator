@@ -46,12 +46,10 @@ if __name__ == '__main__':
         config.parse_args()
         logging.setup(CONF, 'chef_validator_api')
 
-        app = config.load_paste_app('chef_validator')
+        app = config.load_paste_app("chef_validator_api")
         port, host = (CONF.bind_port, CONF.bind_host)
         LOG.info(_LI('Starting Chef Validator ReST API on %(host)s:%(port)s'), {'host': host, 'port': port})
-        launcher = service.ServiceLauncher(CONF)
         server = wsgi.Service(app, port, host)
-        launcher.launch_service(server)
         server.start()
         server.wait()
     except RuntimeError as e:

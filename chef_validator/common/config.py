@@ -19,10 +19,10 @@ from __future__ import unicode_literals
 import os
 
 from eventlet.green import socket
-from paste import deploy
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from chef_validator.common import wsgi
 
 from chef_validator.common.i18n import _
 from chef_validator import version
@@ -105,13 +105,15 @@ def load_paste_app(app_name=None):
 
     app_name += _get_deployment_flavor()
     conf_file = _get_deployment_config_file()
-    logger = logging.getLogger(__name__)
+    if conf_file is None:
+        raise RuntimeError(_("Unable to locate config file"))
+
     try:
-        logger.debug("Loading %(app_name)s from %(conf_file)s" % {'conf_file': conf_file, 'app_name': app_name})
-        app = deploy.loadapp("config:%s" % conf_file, name=app_name)
+        LOG.debug("Loading %(app_name)s from %(conf_file)s" % {'conf_file': conf_file, 'app_name': app_name})
+        app = wsgi.paste_deploy_app(conf_file, app_name, cfg.CONF)
         return app
     except (LookupError, ImportError) as e:
         msg = _("Unable to load %(app_name)s from configuration file %(conf_file)s. \nGot: %(e)r") % \
               {'conf_file': conf_file, 'app_name': app_name, 'e': e}
-        logger.error(msg)
+        LOG.error(msg)
         raise RuntimeError(msg)

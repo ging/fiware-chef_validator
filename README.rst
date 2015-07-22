@@ -22,6 +22,11 @@ To install package dependencies you must run:
 
     pip install -r requirements.txt
 
+API Definition
+--------------
+
+The API definition can be found at http://docs.chefvalidatorapi.apiary.io/#
+
 License
 -------
 

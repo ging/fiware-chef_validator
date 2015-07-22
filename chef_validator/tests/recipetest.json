@@ -1,0 +1,8 @@
+{
+  "recipe": {
+    "name": "memcached",
+    "version": "2.4.10",
+    "url": "https://github.com/opscode-cookbooks/memcached",
+    "description": "Chef Recipe Deployment Test ",
+  }
+}

@@ -12,24 +12,37 @@
 #  under the License.
 
 """Utility methods for working with WSGI servers."""
+import abc
 import time
 import errno
 import logging as sys_logging
-import routes
+import datetime
 import routes.middleware
+
+from paste import deploy
+import routes
+import six
 import webob.dec
 import webob.exc
-
-from oslo_service import service
-from oslo_service import sslutils
-from oslo_log import log as logging
 import eventlet
+
 eventlet.patcher.monkey_patch(all=False, socket=True)
 import eventlet.wsgi
 from eventlet.green import socket
 
+from oslo_service import service
+from oslo_service import sslutils
+from oslo_log import log as logging
+from oslo_serialization import jsonutils
+from oslo_utils import importutils
+from oslo_config import cfg
+
 from chef_validator.common import exceptions
-from chef_validator.common.config import CONF
+from chef_validator.common.i18n import _
+
+LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
+
 
 class WritableLogger(object):
     """A thin wrapper that responds to `write` and logs."""
@@ -41,6 +54,7 @@ class WritableLogger(object):
     def write(self, msg):
         self.LOG.log(self.level, msg.rstrip("\n"))
 
+
 class Service(service.Service):
     """Provides a Service API for wsgi servers.
 
@@ -48,8 +62,7 @@ class Service(service.Service):
     Launcher classes in oslo_service.service.py.
     """
 
-    def __init__(self, application, port,
-                 host='0.0.0.0', backlog=4096, threads=1000):
+    def __init__(self, application, port, host='0.0.0.0', backlog=4096, threads=1000):
         self.application = application
         self._port = port
         self._host = host
@@ -73,7 +86,6 @@ class Service(service.Service):
             except socket.error as err:
                 if err.args[0] != errno.EADDRINUSE:
                     raise
-                    eventlet.sleep(0.1)
         if not sock:
             raise RuntimeError(_("Could not bind to %(host)s:%(port)s after trying for 30 seconds") %
                                {'host': host, 'port': port})
@@ -125,3 +137,355 @@ class Service(service.Service):
         """Start a WSGI server in a new green thread."""
         logger = logging.getLogger('eventlet.wsgi')
         eventlet.wsgi.server(socket, application, custom_pool=self.tg.pool, log=WritableLogger(logger))
+
+
+class Request(webob.Request):
+    """Add some Openstack API-specific logic to the base webob.Request."""
+
+    default_request_content_types = ('application/json',)
+    default_accept_types = ('application/json',)
+    default_accept_type = 'application/json'
+
+    def best_match_content_type(self, supported_content_types=None):
+        """Determine the requested response content-type.
+
+        Based on the query extension then the Accept header.
+        Defaults to default_accept_type if we don't find a preference
+
+        """
+        supported_content_types = (supported_content_types or self.default_accept_types)
+
+        parts = self.path.rsplit('.', 1)
+        if len(parts) > 1:
+            ctype = 'application/{0}'.format(parts[1])
+            if ctype in supported_content_types:
+                return ctype
+
+        bm = self.accept.best_match(supported_content_types)
+        return bm or self.default_accept_type
+
+    def get_content_type(self, allowed_content_types=None):
+        """Determine content type of the request body.
+
+        Does not do any body introspection, only checks header
+
+        """
+        if "Content-Type" not in self.headers:
+            return None
+
+        content_type = self.content_type
+        allowed_content_types = (allowed_content_types or self.default_request_content_types)
+
+        if content_type not in allowed_content_types:
+            raise exceptions.InvalidContentType(content_type=content_type)
+        return content_type
+
+
+class ActionDispatcher(object):
+    """Maps method name to local methods through action name."""
+
+    def dispatch(self, *args, **kwargs):
+        """Find and call local method."""
+        action = kwargs.pop('action', 'default')
+        action_method = getattr(self, str(action), self.default)
+        return action_method(*args, **kwargs)
+
+    def default(self, data):
+        raise NotImplementedError()
+
+
+class DictSerializer(ActionDispatcher):
+    """Default request body serialization."""
+
+    def serialize(self, data, action='default'):
+        return self.dispatch(data, action=action)
+
+    def default(self, data):
+        return ""
+
+
+class JSONDictSerializer(DictSerializer):
+    """Default JSON request body serialization."""
+
+    def default(self, data, result=None):
+        def sanitizer(obj):
+            if isinstance(obj, datetime.datetime):
+                _dtime = obj - datetime.timedelta(microseconds=obj.microsecond)
+                return _dtime.isoformat()
+            return unicode(obj)
+
+        if result:
+            data.body = jsonutils.dumps(result)
+        return jsonutils.dumps(data, default=sanitizer)
+
+
+class Resource(object):
+    """WSGI app that handles (de)serialization and controller dispatch.
+
+    Reads routing information supplied by RoutesMiddleware and calls
+    the requested action method upon its deserializer, controller,
+    and serializer. Those three objects may implement any of the basic
+    controller action methods (create, update, show, index, delete)
+    along with any that may be specified in the api router. A 'default'
+    method may also be implemented to be used in place of any
+    non-implemented actions. Deserializer methods must accept a request
+    argument and return a dictionary. Controller methods must accept a
+    request argument. Additionally, they must also accept keyword
+    arguments that represent the keys returned by the Deserializer. They
+    may raise a webob.exc exception or return a dict, which will be
+    serialized by requested content type.
+    """
+
+    def __init__(self, controller, deserializer=None, serializer=None):
+        """Resource init.
+        :param controller: object that implement methods created by routes lib
+        :param deserializer: object that supports webob request deserialization
+                             through controller-like actions
+        :param serializer: object that supports webob response serialization
+                           through controller-like actions
+        """
+        self.controller = controller
+        self.serializer = serializer
+        self.deserializer = deserializer
+
+    @webob.dec.wsgify(RequestClass=Request)
+    def __call__(self, request):
+        """WSGI method that controls (de)serialization and method dispatch."""
+
+        try:
+            action, action_args, accept = self.deserialize_request(request)
+        except exceptions.InvalidContentType:
+            msg = _("Unsupported Content-Type")
+            return webob.exc.HTTPUnsupportedMediaType(explanation=msg)
+        except exceptions.MalformedRequestBody:
+            msg = _("Malformed request body")
+            return webob.exc.HTTPBadRequest(explanation=msg)
+
+        action_result = self.execute_action(action, request, **action_args)
+        try:
+            return self.serialize_response(action, action_result, accept)
+        # return unserializable result (typically a webob exc)
+        except Exception:
+            return action_result
+
+    def deserialize_request(self, request):
+        return self.deserializer.deserialize(request)
+
+    def serialize_response(self, action, action_result, accept):
+        return self.serializer.serialize(action_result, accept, action)
+
+    def execute_action(self, action, request, **action_args):
+        return self.dispatch(self.controller, action, request, **action_args)
+
+    def dispatch(self, obj, action, *args, **kwargs):
+        """Find action-specific method on self and call it."""
+        try:
+            method = getattr(obj, action)
+        except AttributeError:
+            method = getattr(obj, 'default')
+
+        return method(*args, **kwargs)
+
+    def get_action_args(self, request_environment):
+        """Parse dictionary created by routes library."""
+        try:
+            args = request_environment['wsgiorg.routing_args'][1].copy()
+        except Exception:
+            return {}
+
+        try:
+            del args['controller']
+        except KeyError:
+            pass
+
+        try:
+            del args['format']
+        except KeyError:
+            pass
+
+        return args
+
+
+class Router(object):
+    """WSGI middleware that maps incoming requests to WSGI apps."""
+
+    def __init__(self, mapper):
+        """Create a router for the given routes.Mapper.
+
+        Each route in `mapper` must specify a 'controller', which is a
+        WSGI app to call.  You'll probably want to specify an 'action' as
+        well and have your controller be a wsgi.Controller, who will route
+        the request to the action method.
+
+        Examples:
+          mapper = routes.Mapper()
+          sc = ServerController()
+
+          # Explicit mapping of one route to a controller+action
+          mapper.connect(None, "/svrlist", controller=sc, action="list")
+
+          # Actions are all implicitly defined
+          mapper.resource("server", "servers", controller=sc)
+
+          # Pointing to an arbitrary WSGI app.  You can specify the
+          # {path_info:.*} parameter so the target app can be handed just that
+          # section of the URL.
+          mapper.connect(None, "/v1.0/{path_info:.*}", controller=BlogApp())
+        """
+        self.map = mapper
+        self._router = routes.middleware.RoutesMiddleware(self._dispatch, self.map)
+
+    @webob.dec.wsgify
+    def __call__(self, req):
+        """Route the incoming request to a controller based on self.map.
+           If no match, return a 404.
+        """
+        return self._router
+
+    @staticmethod
+    @webob.dec.wsgify
+    def _dispatch(req):
+        """Called by self._router after matching the incoming request to
+           a route and putting the information into req.environ.
+           Either returns 404 or the routed WSGI app's response.
+        """
+        match = req.environ['wsgiorg.routing_args'][1]
+        if not match:
+            return webob.exc.HTTPNotFound()
+        app = match['controller']
+        return app
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BasePasteFactory(object):
+    """A base class for paste app and filter factories.
+
+    Sub-classes must override the KEY class attribute and provide
+    a __call__ method.
+    """
+
+    KEY = None
+
+    def __init__(self, conf):
+        self.conf = conf
+
+    @abc.abstractmethod
+    def __call__(self, global_conf, **local_conf):
+        return
+
+    def _import_factory(self, local_conf):
+        """Import an app/filter class.
+
+        Lookup the KEY from the PasteDeploy local conf and import the
+        class named there. This class can then be used as an app or
+        filter factory.
+
+        Note we support the <module>:<class> format.
+
+        Note also that if you do e.g.
+
+          key =
+              value
+
+        then ConfigParser returns a value with a leading newline, so
+        we strip() the value before using it.
+        """
+        class_name = local_conf[self.KEY].replace(':', '.').strip()
+        return importutils.import_class(class_name)
+
+
+class AppFactory(BasePasteFactory):
+    """A Generic paste.deploy app factory.
+
+    This requires chef_validator.app_factory to be set to a callable which returns a
+    WSGI app when invoked. The format of the name is <module>:<callable> e.g.
+
+      [app:apiv1app]
+      paste.app_factory = chef_validator.common.wsgi:app_factory
+      chef_validator.app_factory = chef_validator.api.cfn.v1:API
+
+    The WSGI app constructor must accept a ConfigOpts object and a local config
+    dict as its two arguments.
+    """
+
+    KEY = 'chef_validator.app_factory'
+
+    def __call__(self, global_conf, **local_conf):
+        """The actual paste.app_factory protocol method."""
+        factory = self._import_factory(local_conf)
+        return factory(self.conf, **local_conf)
+
+
+class FilterFactory(AppFactory):
+    """A Generic paste.deploy filter factory.
+
+    This requires chef_validator.filter_factory to be set to a callable which returns a
+    WSGI filter when invoked. The format is <module>:<callable> e.g.
+
+      [filter:cache]
+      paste.filter_factory = chef_validator.common.wsgi:filter_factory
+      chef_validator.filter_factory = chef_validator.api.middleware.cache:CacheFilter
+
+    The WSGI filter constructor must accept a WSGI app, a ConfigOpts object and
+    a local config dict as its three arguments.
+    """
+
+    KEY = 'chef_validator.filter_factory'
+
+    def __call__(self, global_conf, **local_conf):
+        """The actual paste.filter_factory protocol method."""
+        factory = self._import_factory(local_conf)
+
+        def filter(app):
+            return factory(app, self.conf, **local_conf)
+
+        return filter
+
+
+def setup_paste_factories(conf):
+    """Set up the generic paste app and filter factories.
+
+    Set things up so that:
+
+      paste.app_factory = chef_validator.common.wsgi:app_factory
+
+    and
+
+      paste.filter_factory = chef_validator.common.wsgi:filter_factory
+
+    work correctly while loading PasteDeploy configuration.
+
+    The app factories are constructed at runtime to allow us to pass a
+    ConfigOpts object to the WSGI classes.
+
+    :param conf: a ConfigOpts object
+    """
+    global app_factory, filter_factory
+    app_factory = AppFactory(conf)
+    filter_factory = FilterFactory(conf)
+
+
+def teardown_paste_factories():
+    """Reverse the effect of setup_paste_factories()."""
+    global app_factory, filter_factory
+    del app_factory
+    del filter_factory
+
+
+def paste_deploy_app(paste_config_file, app_name, conf):
+    """Load a WSGI app from a PasteDeploy configuration.
+
+    Use deploy.loadapp() to load the app from the PasteDeploy configuration,
+    ensuring that the supplied ConfigOpts object is passed to the app and
+    filter constructors.
+
+    :param paste_config_file: a PasteDeploy config file
+    :param app_name: the name of the app/pipeline to load from the file
+    :param conf: a ConfigOpts object to supply to the app and its filters
+    :returns: the WSGI app
+    """
+    setup_paste_factories(conf)
+    try:
+        return deploy.loadapp("config:%s" % paste_config_file, name=app_name)
+    finally:
+        teardown_paste_factories()
