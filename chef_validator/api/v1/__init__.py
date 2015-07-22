@@ -6,7 +6,7 @@ from chef_validator.common import wsgi
 
 class API(wsgi.Router):
     """
-    WSGI router for Heat v1 ReST API requests.
+    WSGI router for chef_validator v1 ReST API requests.
     """
 
     def __init__(self, conf, **local_conf):
