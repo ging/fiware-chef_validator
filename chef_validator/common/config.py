@@ -31,13 +31,16 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 bind_opts = [
-    cfg.StrOpt('bind_host', default=socket.gethostname(), help=_('Name of the engine node.')),
-    cfg.StrOpt('bind_port', default=4041, help=_('Listening port of the engine node.')),
+    cfg.StrOpt('bind_host', default=socket.gethostname(),
+               help=_('Name of the engine node.')),
+    cfg.StrOpt('bind_port', default=4041,
+               help=_('Listening port of the engine node.')),
 ]
 
 paste_deploy_group = cfg.OptGroup('paste_deploy')
 paste_deploy_opts = [
-    cfg.StrOpt('config_file', default="api-paste.ini", help=_("The API config file to use.")),
+    cfg.StrOpt('config_file', default="api-paste.ini",
+               help=_("The API config file to use.")),
     cfg.StrOpt('flavor', help=_("The flavor to use."))
 ]
 
@@ -109,11 +112,13 @@ def load_paste_app(app_name=None):
         raise RuntimeError(_("Unable to locate config file"))
 
     try:
-        LOG.debug("Loading %(app_name)s from %(conf_file)s" % {'conf_file': conf_file, 'app_name': app_name})
+        LOG.debug("Loading %(app_name)s from %(conf_file)s" %
+                  {'conf_file': conf_file, 'app_name': app_name})
         app = wsgi.paste_deploy_app(conf_file, app_name, cfg.CONF)
         return app
     except (LookupError, ImportError) as e:
-        msg = _("Unable to load %(app_name)s from configuration file %(conf_file)s. \nGot: %(e)r") % \
-              {'conf_file': conf_file, 'app_name': app_name, 'e': e}
+        msg = _("Unable to load %(app_name)s from configuration file "
+                "%(conf_file)s. \nGot: %(e)r") % \
+            {'conf_file': conf_file, 'app_name': app_name, 'e': e}
         LOG.error(msg)
         raise RuntimeError(msg)

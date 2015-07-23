@@ -18,6 +18,7 @@ from oslo_config import cfg
 
 from chef_validator.common import wsgi
 
+
 class HTTPExceptionDisguise(Exception):
     """Disguises HTTP exceptions so they can be handled by the webob fault
     application in the wsgi pipeline.
@@ -29,7 +30,6 @@ class HTTPExceptionDisguise(Exception):
 
 
 class Fault(object):
-
     def __init__(self, error):
         self.error = error
 
@@ -50,6 +50,7 @@ class FaultWrapper(wsgi.Middleware):
     def factory(cls, global_conf, **local_conf):
         def filter(app):
             return cls(app)
+
         return filter
 
     error_map = {
@@ -90,9 +91,6 @@ class FaultWrapper(wsgi.Middleware):
         else:
             msg_trace = traceback.format_exc()
             message = full_message
-
-        if isinstance(ex, pkg_exc.PackageException):
-            message = ex.message
 
         if cfg.CONF.debug and not trace:
             trace = msg_trace

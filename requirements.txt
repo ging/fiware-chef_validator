@@ -16,9 +16,7 @@ oslo.config
 oslo.service
 
 keystonemiddleware
+python-glanceclient
+python-keystoneclient
+python-novaclient
 
-#testing
-fixtures
-testtools
-nose
-mock

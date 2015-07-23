@@ -11,13 +11,13 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-ENV_SCHEMA = {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+from chef_validator.tests import base
 
-    "type": "object",
-    "properties": {
-        "id": {"type": "string"},
-        "name": {"type": "string"}
-    },
-    "required": ["id", "name"]
-}
+
+class SysLogHandlersTestCase(base.ValidatorTestCase):
+
+    def setUp(self):
+        super(SysLogHandlersTestCase, self).setUp()
+
+    def test_test(self):
+        self.assertEqual(1, 1)

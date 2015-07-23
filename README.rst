@@ -27,6 +27,43 @@ API Definition
 
 The API definition can be found at http://docs.chefvalidatorapi.apiary.io/#
 
+External Dependencies
+---------------------
+
+The system deployment depends on several external services for successful completion.
+The dependency list reads as follows:
+
+- OpenStack Keystone server:
+    Used for issuing user tokens for several OpenStack services
+
+- OpenStack Glance server:
+    Used for listing the available virtual machine images
+
+- OpenStack Nova server:
+    Used for deploying the selected virtual machine
+
+- Chef server:
+    Used to coordinate chef activities
+
+Validation Process
+------------------
+
+The recipe validation process consists on the following steps:
+
+1. The **Client** sends a POST request to the service API, containing:
+    - The name of the recipe to be tested
+    - The *Github* repository from which to obtain the recipe
+    - The virtual machine name for deployment
+2. The **Server** recieves the request and takes the following steps:
+    - Checks the user permissions to take the next steps by validating against Keystone
+    - Downloads the needed *recipe*
+    - Deploys the selected *Virtual Machine* image
+    - Instructs the **Chef Server** to deploy the *recipe* in the given *Virtual Machine*
+    - Responds to the **Client** request informing of the status of the validation process
+
+
+
+
 License
 -------
 

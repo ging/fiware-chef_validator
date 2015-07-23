@@ -15,18 +15,19 @@ import webob.dec
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+
 from chef_validator.common import wsgi
 
 CONF = cfg.CONF
 
 
 class Controller(object):
-
     """A wsgi controller that reports which API versions are supported."""
 
     @staticmethod
     def index(req):
         """Respond to a request for all OpenStack API versions."""
+
         def build_version_object(version, path, status):
             return {
                 'id': 'v%s' % version,
@@ -38,6 +39,7 @@ class Controller(object):
                     },
                 ],
             }
+
         version_objs = []
         version_objs.extend([
             build_version_object(1.0, 'v1', 'CURRENT'),

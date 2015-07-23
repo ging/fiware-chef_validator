@@ -17,8 +17,8 @@ import testtools
 import fixtures
 
 CONF = cfg.CONF
-
-log.setup('chef_validator')
+log.register_options(CONF)
+log.setup(CONF, 'chef_validator')
 
 
 class ValidatorTestCase(testtools.TestCase):

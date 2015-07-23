@@ -11,7 +11,12 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from testtools import TestCase
+import chef_validator.tests.api.base as tb
+from chef_validator.api.v1 import actions
 
-def test_numbers_3_4(TestCase):
-    assert 3*4 == 12
+
+class TestActionsApi(tb.ControllerTest, tb.ValidatorApiTestCase):
+
+    def setUp(self):
+        super(TestActionsApi, self).setUp()
+        self.controller = actions.ValidateController()

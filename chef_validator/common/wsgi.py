@@ -47,8 +47,8 @@ CONF = cfg.CONF
 class WritableLogger(object):
     """A thin wrapper that responds to `write` and logs."""
 
-    def __init__(self, LOG, level=sys_logging.DEBUG):
-        self.LOG = LOG
+    def __init__(self, log, level=sys_logging.DEBUG):
+        self.LOG = log
         self.level = level
 
     def write(self, msg):
@@ -62,7 +62,8 @@ class Service(service.Service):
     Launcher classes in oslo_service.service.py.
     """
 
-    def __init__(self, application, port, host='0.0.0.0', backlog=4096, threads=1000):
+    def __init__(self, application, port, host='0.0.0.0', backlog=4096,
+                 threads=1000):
         self.application = application
         self._port = port
         self._host = host
@@ -71,7 +72,9 @@ class Service(service.Service):
 
     @staticmethod
     def _get_socket(host, port, backlog):
-        info = socket.getaddrinfo(host, port, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
+        info = socket.getaddrinfo(
+            host, port, socket.AF_UNSPEC, socket.SOCK_STREAM
+        )[0]
         family = info[0]
         bind_addr = info[-1]
 
@@ -79,7 +82,8 @@ class Service(service.Service):
         retry_until = time.time() + 30
         while not sock and time.time() < retry_until:
             try:
-                sock = eventlet.listen(bind_addr, backlog=backlog, family=family)
+                sock = eventlet.listen(bind_addr, backlog=backlog,
+                                       family=family)
                 if sslutils.is_enabled(CONF):
                     sock = sslutils.wrap(CONF, sock)
 
@@ -87,15 +91,18 @@ class Service(service.Service):
                 if err.args[0] != errno.EADDRINUSE:
                     raise
         if not sock:
-            raise RuntimeError(_("Could not bind to %(host)s:%(port)s after trying for 30 seconds") %
-                               {'host': host, 'port': port})
+            raise RuntimeError(_(
+                "Could not bind to %(host)s:%(port)s "
+                "after trying for 30 seconds") %
+                {'host': host, 'port': port})
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # sockets can hang around forever without keepalive
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
         # This option isn't available in the OS X version of eventlet
         if hasattr(socket, 'TCP_KEEPIDLE'):
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, CONF.tcp_keepidle)
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
+                            CONF.tcp_keepidle)
 
         return sock
 
@@ -133,10 +140,11 @@ class Service(service.Service):
         super(Service, self).reset()
         logging.setup(CONF, 'chef_validator')
 
-    def _run(self, application, socket):
+    def _run(self, application, asocket):
         """Start a WSGI server in a new green thread."""
         logger = logging.getLogger('eventlet.wsgi')
-        eventlet.wsgi.server(socket, application, custom_pool=self.tg.pool, log=WritableLogger(logger))
+        eventlet.wsgi.server(asocket, application, custom_pool=self.tg.pool,
+                             log=WritableLogger(logger))
 
 
 class Request(webob.Request):
@@ -153,7 +161,8 @@ class Request(webob.Request):
         Defaults to default_accept_type if we don't find a preference
 
         """
-        supported_content_types = (supported_content_types or self.default_accept_types)
+        supported_content_types = (supported_content_types
+                                   or self.default_accept_types)
 
         parts = self.path.rsplit('.', 1)
         if len(parts) > 1:
@@ -174,7 +183,8 @@ class Request(webob.Request):
             return None
 
         content_type = self.content_type
-        allowed_content_types = (allowed_content_types or self.default_request_content_types)
+        allowed_content_types = (allowed_content_types
+                                 or self.default_request_content_types)
 
         if content_type not in allowed_content_types:
             raise exception.InvalidContentType(content_type=content_type)
@@ -182,7 +192,6 @@ class Request(webob.Request):
 
 
 class JSONDeserializer(object):
-
     def dispatch(self, *args, **kwargs):
         """Find and call local method."""
         action = kwargs.pop('action', 'default')
@@ -197,11 +206,11 @@ class JSONDeserializer(object):
         try:
             return {'body': jsonutils.loads(request.body)}
         except ValueError:
-            raise exception.MalformedRequestBody(reason=_("cannot understand JSON"))
+            raise exception.MalformedRequestBody(
+                reason=_("cannot understand JSON"))
 
 
 class JSONSerializer(object):
-
     @staticmethod
     def default(response, result):
         response.content_type = 'application/json'
@@ -333,7 +342,8 @@ class Router(object):
           mapper.connect(None, "/v1.0/{path_info:.*}", controller=BlogApp())
         """
         self.map = mapper
-        self._router = routes.middleware.RoutesMiddleware(self._dispatch, self.map)
+        self._router = routes.middleware.RoutesMiddleware(self._dispatch,
+                                                          self.map)
 
     @webob.dec.wsgify
     def __call__(self, req):
@@ -397,8 +407,9 @@ class BasePasteFactory(object):
 class AppFactory(BasePasteFactory):
     """A Generic paste.deploy app factory.
 
-    This requires chef_validator.app_factory to be set to a callable which returns a
-    WSGI app when invoked. The format of the name is <module>:<callable> e.g.
+    This requires chef_validator.app_factory to be set to a callable which
+    returns a WSGI app when invoked. The format of the name is
+    <module>:<callable> e.g.
 
       [app:apiv1app]
       paste.app_factory = chef_validator.common.wsgi:app_factory
@@ -419,12 +430,14 @@ class AppFactory(BasePasteFactory):
 class FilterFactory(AppFactory):
     """A Generic paste.deploy filter factory.
 
-    This requires chef_validator.filter_factory to be set to a callable which returns a
-    WSGI filter when invoked. The format is <module>:<callable> e.g.
+    This requires chef_validator.filter_factory to be set to a callable
+    which returns a WSGI filter when invoked. The format is
+    <module>:<callable> e.g.
 
       [filter:cache]
       paste.filter_factory = chef_validator.common.wsgi:filter_factory
-      chef_validator.filter_factory = chef_validator.api.middleware.cache:CacheFilter
+      chef_validator.filter_factory =
+      chef_validator.api.middleware.cache:CacheFilter
 
     The WSGI filter constructor must accept a WSGI app, a ConfigOpts object and
     a local config dict as its three arguments.

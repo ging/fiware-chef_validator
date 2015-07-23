@@ -11,12 +11,10 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from webob import exc
-
 from oslo_log import log as logging
 
 from chef_validator.common import wsgi
-from chef_validator.common.i18n import _LI, _LE, _
+from chef_validator.common.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -28,7 +26,6 @@ class ValidateController(object):
     """
     def validate(self, request, body):
         LOG.info(_LI('Processing Request'))
-        print
         return {"resp": "OK"}
 
 
