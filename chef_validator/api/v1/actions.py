@@ -15,6 +15,8 @@ from oslo_log import log as logging
 
 from chef_validator.common import wsgi
 from chef_validator.common.i18n import _LI
+from chef_validator.engine.clients.glance import GlanceClient
+from chef_validator.engine.clients.keystone import KeystoneClient
 
 LOG = logging.getLogger(__name__)
 
@@ -26,6 +28,11 @@ class ValidateController(object):
     """
     def validate(self, request, body):
         LOG.info(_LI('Processing Request'))
+        c = request.context
+        ks = KeystoneClient(c.auth_token)
+        g = GlanceClient(ks.kc)
+        g.get_by_name(body['recipe']['machine'])
+
         return {"resp": "OK"}
 
 

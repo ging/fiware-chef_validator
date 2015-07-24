@@ -1,8 +1,6 @@
 {
   "recipe": {
-    "name": "fakerecipe",
-    "version": "2.4.10",
     "url": "https://github.com/opscode-cookbooks/memcached",
-    "description": "Chef Recipe Deployment Test "
+    "machine": "chef_client"
   }
 }

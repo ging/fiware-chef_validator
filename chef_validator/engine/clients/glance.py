@@ -11,93 +11,60 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from glanceclient import client as gc
-from glanceclient import exc
+import glanceclient
+
 from oslo_log import log as logging
-from oslo_utils import uuidutils
-
-from chef_validator.common import exception
-from chef_validator.common.i18n import _LI, _
-from chef_validator.engine.clients import client_plugin
-
+from oslo_config import cfg
 LOG = logging.getLogger(__name__)
 
 
-class GlanceClientPlugin(client_plugin.ClientPlugin):
-    exceptions_module = exc
-    service_types = ['image']
+class GlanceClient(object):
+    def __init__(self, ks):
+        self.client = self.create_glance_client(ks)
 
-    def _create(self):
-
-        con = self.context
-        endpoint_type = self._get_client_option('glance', 'endpoint_type')
-        endpoint = self.url_for(service_type=self.service_types[0],
-                                endpoint_type=endpoint_type)
-        args = {
-            'auth_url': con.auth_url,
-            'service_type': self.service_types[0],
-            'project_id': con.tenant,
-            'token': self.auth_token,
-            'endpoint_type': endpoint_type,
-            'cacert': self._get_client_option('glance', 'ca_file'),
-            'cert_file': self._get_client_option('glance', 'cert_file'),
-            'key_file': self._get_client_option('glance', 'key_file'),
-            'insecure': self._get_client_option('glance', 'insecure')
-        }
-
-        return gc.Client('1', endpoint, **args)
-
-    def is_not_found(self, ex):
-        return isinstance(ex, exc.HTTPNotFound)
-
-    def is_over_limit(self, ex):
-        return isinstance(ex, exc.HTTPOverLimit)
-
-    def is_conflict(self, ex):
-        return isinstance(ex, exc.HTTPConflict)
-
-    def get_image_id(self, image_identifier):
-        """
-        Return an id for the specified image name or identifier.
-
-        :param image_identifier: image name or a UUID-like identifier
-        :returns: the id of the requested :image_identifier:
-        :raises: exception.EntityNotFound,
-                 exception.PhysicalResourceNameAmbiguity
-        """
-        if uuidutils.is_uuid_like(image_identifier):
+    def list(self):
+        images = self.client.images.list()
+        while True:
             try:
-                image_id = self.client().images.get(image_identifier).id
-            except exc.HTTPNotFound:
-                image_id = self.get_image_id_by_name(image_identifier)
-        else:
-            image_id = self.get_image_id_by_name(image_identifier)
-        return image_id
+                image = images.next()
+                yield GlanceClient._format(image)
+            except StopIteration:
+                break
 
-    def get_image_id_by_name(self, image_identifier):
-        """
-        Return an id for the specified image name.
-
-        :param image_identifier: image name
-        :returns: the id of the requested :image_identifier:
-        :raises: exception.EntityNotFound,
-                 exception.PhysicalResourceNameAmbiguity
-        """
-        try:
-            filters = {'name': image_identifier}
-            image_list = list(self.client().images.list(filters=filters))
-        except exc.ClientException as ex:
-            raise exception.Error(
-                _("Error retrieving image list from glance: %s") % ex)
-        num_matches = len(image_list)
-        if num_matches == 0:
-            LOG.info(_LI("Image %s was not found in glance"), image_identifier)
-            raise exception.EntityNotFound(entity='Image',
-                                           name=image_identifier)
-        elif num_matches > 1:
-            LOG.info(_LI("Multiple images %s were found in glance with name"),
-                     image_identifier)
-            raise exception.PhysicalResourceNameAmbiguity(
-                name=image_identifier)
+    def get_by_name(self, name):
+        images = list(self.client.images.list(filters={"name": name}))
+        if len(images) > 1:
+            raise AmbiguousNameException(name)
+        elif len(images) == 0:
+            return None
         else:
-            return image_list[0].id
+            return GlanceClient._format(images[0])
+
+    def getById(self, imageId):
+        image = self.client.images.get(imageId)
+        return GlanceClient._format(image)
+
+    @staticmethod
+    def _format(image):
+        res = {"id": image.id, "name": image.name}
+        return res
+
+    @classmethod
+    def init_plugin(cls):
+        cls.CONF = cfg.init_config(cfg.CONF)
+
+    def create_glance_client(self, keystone_client):
+        LOG.debug("Creating a glance client")
+        glance_endpoint = keystone_client.service_catalog.url_for(
+            service_type='image', endpoint_type=self.CONF.endpoint_type)
+        client = glanceclient.Client(self.CONF.api_version,
+                                     endpoint=glance_endpoint,
+                                     token=keystone_client.auth_token)
+        return client
+
+
+class AmbiguousNameException(Exception):
+    def __init__(self, name):
+        super(AmbiguousNameException, self).__init__("Image name '%s'"
+                                                     " is ambiguous" % name)
+

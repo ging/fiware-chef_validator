@@ -75,3 +75,6 @@ etc/chef_validator/*.conf
 doc/make.bat
 doc/Makefile
 doc/build
+
+# Test Environment
+.testrepository/
