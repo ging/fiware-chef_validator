@@ -27,8 +27,16 @@ from chef_validator.common import wsgi
 from chef_validator.common.i18n import _
 from chef_validator import version
 
-LOG = logging.getLogger(__name__)
+socket_opts = [
+    cfg.IntOpt('tcp_keepidle',
+               default=600,
+               help="Sets the value of TCP_KEEPIDLE in seconds for each "
+                    "server socket. Not supported on OS X."),
+]
+
 CONF = cfg.CONF
+CONF.register_opts(socket_opts)
+LOG = logging.getLogger(__name__)
 
 bind_opts = [
     cfg.StrOpt('bind_host', default=socket.gethostname(),
