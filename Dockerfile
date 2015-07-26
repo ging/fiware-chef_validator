@@ -38,7 +38,7 @@ EXPOSE 4042
 WORKDIR /opt/fi-ware-chef_validator
 
 # Import default config
-COPY chef_validator.conf etc/chef_validator/chef_validator.conf
+COPY etc/chef_validator/chef_validator.conf.sample etc/chef_validator/chef_validator.conf
 
 # Export module path
 ENV PYTHONPATH $PYTHONPATH:/opt/fi-ware-chef_validator/chef_validator
