@@ -84,3 +84,18 @@
 
 # Enables or disables fatal status of deprecations. (boolean value)
 #fatal_deprecations = false
+
+bind_host = 127.0.0.1
+bind_port = 4042
+
+[keystone_authtoken]
+admin_user = admin
+admin_password = admin
+identity_uri = http://127.0.0.1:35357/
+auth_uri = http://127.0.0.1:5000/
+
+[paste_deploy]
+flavor=standalone
+
+[filter:authtoken]
+paste.filter_factory = keystonemiddleware.auth_token:filter_factory
