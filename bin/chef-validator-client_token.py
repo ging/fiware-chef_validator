@@ -70,7 +70,6 @@ def main():
         LOG.error(auf.message)
     except Unauthorized as unauth:
         LOG.error(unauth.message)
-
     if auth_token is not None:
         postdata = {
             "recipe": {

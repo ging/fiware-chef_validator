@@ -24,6 +24,9 @@ CONF = cfg.CONF
 class Controller(object):
     """A wsgi controller that reports which API versions are supported."""
 
+    def __init__(self, conf):
+        self.conf = conf
+
     @staticmethod
     def index(req):
         """Respond to a request for all OpenStack API versions."""

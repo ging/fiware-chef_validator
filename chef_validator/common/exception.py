@@ -52,5 +52,27 @@ class MalformedRequestBody(OpenstackException):
     msg_fmt = "Malformed message body: %(reason)s"
 
 
+class AuthorizationFailure(OpenstackException):
+    msg_fmt = "Authorization failed."
+
+
 class TimeoutException(Exception):
     pass
+
+
+class NotAuthenticated(OpenstackException):
+    msg_fmt = "Authentication failed."
+
+
+class ImageNotFound(OpenstackException):
+    msg_fmt = "The requested Image doesn't exist for the given user"
+
+
+class NotFound(OpenstackException):
+    def __init__(self, msg_fmt='Not found'):
+        self.msg_fmt = msg_fmt
+        super(NotFound, self).__init__()
+
+
+class EntityNotFound(OpenstackException):
+    msg_fmt = "The %(entity)s (%(name)s) could not be found."

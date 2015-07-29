@@ -38,23 +38,36 @@ CONF = cfg.CONF
 CONF.register_opts(socket_opts)
 LOG = logging.getLogger(__name__)
 
+# Local ip/port binding options
 bind_opts = [
     cfg.StrOpt('bind_host', default=socket.gethostname(),
                help=_('Name of the engine node.')),
     cfg.StrOpt('bind_port', default=4041,
                help=_('Listening port of the engine node.')),
 ]
+CONF.register_cli_opts(bind_opts)
 
+# Paste/Deploy server options
 paste_deploy_group = cfg.OptGroup('paste_deploy')
 paste_deploy_opts = [
     cfg.StrOpt('config_file', default="api-paste.ini",
                help=_("The API config file to use.")),
     cfg.StrOpt('flavor', help=_("The flavor to use."))
 ]
-
-CONF.register_cli_opts(bind_opts)
 CONF.register_group(paste_deploy_group)
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
+
+# Baseline client options
+clients_opts = [
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help=_(
+                   'Type of endpoint in Identity service catalog to use '
+                   'for communication with the OpenStack service.')),
+]
+CONF.register_opts(clients_opts)
+
+
 
 
 def parse_args(args=None, usage=None, default_config_files=None):

@@ -16,12 +16,13 @@ from keystoneclient.v3 import client as ksclient
 
 
 class KeystoneClient(object):
-    def __init__(self, token):
+    def __init__(self, context):
         settings = self._get_keystone_settings()
         kwargs = {
-            'token': token,
+            'token': context['auth_token'],
             'endpoint': settings['endpoint'],
-            'auth_url': settings['auth_url']
+            'auth_url': settings['auth_url'],
+            'tenant_name': context['project']['name']
         }
         self.kc = ksclient.Client(**kwargs)
         self.kc.authenticate()
@@ -31,8 +32,7 @@ class KeystoneClient(object):
         importutils.import_module('keystonemiddleware.auth_token')
         return {
             'endpoint': cfg.CONF.keystone_authtoken.identity_uri,
-            # shameful patch
-            'auth_url': cfg.CONF.keystone_authtoken.auth_uri+"v3",
+            'auth_url': cfg.CONF.keystone_authtoken.auth_uri,
             'username': cfg.CONF.keystone_authtoken.admin_user,
             'password': cfg.CONF.keystone_authtoken.admin_password,
             'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name

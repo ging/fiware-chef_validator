@@ -37,7 +37,7 @@ if os.path.exists(os.path.join(root, 'chef_validator', '__init__.py')):
 
 i18n.enable_lazy()
 
-LOG = logging.getLogger('chef_validator.api')
+LOG = logging.getLogger()
 CONF = config.CONF
 
 if __name__ == '__main__':

@@ -14,10 +14,11 @@
 from oslo_log import log as logging
 
 from chef_validator.common import wsgi
+from chef_validator.common import exception
 from chef_validator.common.i18n import _LI
 from chef_validator.engine.clients.glance import GlanceClient
 from chef_validator.engine.clients.keystone import KeystoneClient
-
+from chef_validator.engine.clients.nova import NovaClient
 LOG = logging.getLogger(__name__)
 
 
@@ -28,11 +29,26 @@ class ValidateController(object):
     """
     def validate(self, request, body):
         LOG.info(_LI('Processing Request'))
-        c = request.context
-        ks = KeystoneClient(c.auth_token)
+        c = request
+        token = request.environ['keystone.token_info']['token']
+        ks = KeystoneClient(token)
         g = GlanceClient(ks.kc)
-        g.get_by_name(body['recipe']['machine'])
-
+        # find the image id
+        image = g.get_by_name(body['recipe']['machine'])
+        if not image:
+            raise exception.ImageNotFound
+        else:
+            #{'id': u'b31154a0-bc3d-4074-81f8-9246ee67b79c', 'name': u'cirros-0.3.4-x86_64-uec'}
+            n = NovaClient(ks.kc)
+            # check if machine is deployed
+            try:
+                n.get_server(image['name'])
+            except exception.EntityNotFound as ex:
+                # deploy machine
+                n.create_server(image)
+                # gh = GithubClient()
+                # gh.download(recipe)
+                # res = n.send_commands("execute %s" % recipe)
         return {"resp": "OK"}
 
 
