@@ -15,10 +15,12 @@ from oslo_log import log as logging
 
 from chef_validator.common import wsgi
 from chef_validator.common import exception
-from chef_validator.common.i18n import _LI
+from chef_validator.common.i18n import _LI, _
+from chef_validator.engine.clients.chef import ChefClient
 from chef_validator.engine.clients.glance import GlanceClient
 from chef_validator.engine.clients.keystone import KeystoneClient
 from chef_validator.engine.clients.nova import NovaClient
+
 LOG = logging.getLogger(__name__)
 
 
@@ -28,28 +30,32 @@ class ValidateController(object):
     Implements Application logic
     """
     def validate(self, request, body):
+        recipe = body['recipe']
+        image = body['image']
         LOG.info(_LI('Processing Request'))
-        c = request
         token = request.environ['keystone.token_info']['token']
         ks = KeystoneClient(token)
         g = GlanceClient(ks.kc)
+
         # find the image id
-        image = g.get_by_name(body['recipe']['machine'])
-        if not image:
+        image_id = g.get_by_name(image)
+        if not image_id:
             raise exception.ImageNotFound
-        else:
-            #{'id': u'b31154a0-bc3d-4074-81f8-9246ee67b79c', 'name': u'cirros-0.3.4-x86_64-uec'}
-            n = NovaClient(ks.kc)
-            # check if machine is deployed
-            try:
-                n.get_server(image['name'])
-            except exception.EntityNotFound as ex:
-                # deploy machine
-                n.create_server(image)
-                # gh = GithubClient()
-                # gh.download(recipe)
-                # res = n.send_commands("execute %s" % recipe)
-        return {"resp": "OK"}
+
+        n = NovaClient(ks.kc)
+        machine = "%s-validate" % body['image']
+        # if the machine already exists, destroy it
+        if n.get_machine(machine):
+            LOG.info(_LI("Server %s already exists, deleting" % machine))
+            n.delete_machine(machine)
+
+        # deploy machine
+        n.deploy_machine(machine, image_id=image_id)
+
+        # send knife command
+        c = ChefClient(n.get_ip())
+        res = c.send_recipe(recipe)
+        return {"resp": res}
 
 
 def create_resource():

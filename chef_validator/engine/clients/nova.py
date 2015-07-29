@@ -13,11 +13,9 @@
 
 from novaclient import client as nc
 from novaclient import exceptions
+
 from oslo_log import log as logging
 from oslo_config import cfg
-
-from chef_validator.common import exception
-from chef_validator.common.i18n import _LW
 
 LOG = logging.getLogger(__name__)
 opts = [
@@ -32,13 +30,13 @@ CONF.register_opts(opts, group="clients_nova")
 class NovaClient(object):
     def __init__(self, ksc):
         self._client = self.create_nova_client(ksc)
+        print self._client.flavors.list()
         self._machine = None
 
     @staticmethod
     def create_nova_client(keystone_client):
         import pprint
         pprint.pprint(keystone_client.__dict__)
-        LOG.debug("Creating a nova client")
         endpoint_type = CONF.clients_nova.endpoint_type
         nova_endpoint = CONF.clients_nova.endpoint
         if nova_endpoint is None:
@@ -49,13 +47,13 @@ class NovaClient(object):
         extensions = nc.discover_extensions(CONF.clients_nova.api_version)
         args = {
             'project_id': keystone_client.project_id,
-            'auth_url': keystone_client.auth_url,
+            # nova client does not support v3 auth
+            'auth_url': keystone_client.auth_url.replace("/v3", "/v2.0"),
             'service_type': 'compute',
             'user_id': keystone_client.user_id,
             'extensions': extensions,
             'endpoint_type': CONF.clients_nova.endpoint_type,
-            'endpoint': nova_endpoint.replace("/v3", "/"),
-            'username': 'demo',
+            'bypass_url': nova_endpoint,
             'auth_token': keystone_client.auth_token
         }
         return nc.Client(
@@ -63,18 +61,25 @@ class NovaClient(object):
             **args
         )
 
-    def get_server(self, server):
+    def get_machine(self, server):
         try:
-            return self._client.servers.get(server)
+            self._client.servers.get(server)
+            exists = True
         except exceptions.NotFound as ex:
-            LOG.warn(_LW('Server (%(server)s) not found: %(ex)s'),
-                     {'server': server, 'ex': ex})
-            raise exception.EntityNotFound(entity='Server', name=server)
+            exists = False
+        return exists
 
-    def create_server(self, image):
-        print self._client.images.list()
-        # self._machine = self._client.servers.create(
-        #     name=image['name'],
-        #     image=image['id'],
-        #     flavor='m1.nano'
-        # )
+    def deploy_machine(self, name, image_id):
+        LOG.debug("Creating a nova client")
+        self._machine = self._client.servers.create(
+            name=name,
+            image=image_id,
+            flavor='m1.nano'
+        )
+
+    def delete_machine(self, name):
+        self._client.servers.delete(name=name)
+
+    def get_ip(self):
+        """Return the server's IP"""
+        return self._machine.server.addresses[0]

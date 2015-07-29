@@ -9,6 +9,7 @@ Paste
 PasteDeploy
 webob
 Routes
+paramiko
 
 oslo.i18n
 oslo.log

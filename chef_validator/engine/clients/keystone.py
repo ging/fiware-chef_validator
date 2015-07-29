@@ -22,7 +22,7 @@ class KeystoneClient(object):
             'token': context['auth_token'],
             'endpoint': settings['endpoint'],
             'auth_url': settings['auth_url'],
-            'tenant_name': context['project']['name']
+            'project_name': context['project']['name']
         }
         self.kc = ksclient.Client(**kwargs)
         self.kc.authenticate()

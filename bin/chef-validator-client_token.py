@@ -26,13 +26,12 @@ from keystoneclient.openstack.common.apiclient.exceptions import \
 from keystoneclient.v3 import client
 
 opts = [
-    cfg.StrOpt('machine', help="VM chef client image name"),
-    cfg.StrOpt('recipe_url', help="Url of the recipe to deploy"),
+    cfg.StrOpt('image', help="Glance Image to deploy"),
+    cfg.StrOpt('recipe', help="Name of the recipe to deploy"),
     cfg.StrOpt('username', help="Keystone username"),
     cfg.StrOpt('password', help="Keystone password"),
-    cfg.StrOpt('auth_url', help="Keystone Auth Url"),
     cfg.StrOpt('validator_url', help="Chef Validator Url"),
-
+    cfg.StrOpt('auth_url', help="Keystone Auth Url"),
 ]
 cfg.CONF.register_cli_opts(opts)
 cfg.CONF(sys.argv[1:])
@@ -72,10 +71,8 @@ def main():
         LOG.error(unauth.message)
     if auth_token is not None:
         postdata = {
-            "recipe": {
-                "url": CONF.recipe_url,
-                "machine": CONF.machine
-            }
+            "recipe": CONF.recipe,
+            "image": CONF.image
         }
         # sends the request
         req = urllib2.Request(VALIDATOR_URL)
