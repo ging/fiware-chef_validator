@@ -30,15 +30,13 @@ CONF.register_opts(opts, group="clients_nova")
 class NovaClient(object):
     def __init__(self, ksc):
         self._client = self.create_nova_client(ksc)
-        print self._client.flavors.list()
         self._machine = None
 
     @staticmethod
     def create_nova_client(keystone_client):
-        import pprint
-        pprint.pprint(keystone_client.__dict__)
         endpoint_type = CONF.clients_nova.endpoint_type
-        nova_endpoint = CONF.clients_nova.endpoint
+        # nova_endpoint = CONF.clients_nova.endpoint
+        nova_endpoint = None
         if nova_endpoint is None:
             nova_endpoint = keystone_client.service_catalog.url_for(
                 service_type='compute',
@@ -47,8 +45,8 @@ class NovaClient(object):
         extensions = nc.discover_extensions(CONF.clients_nova.api_version)
         args = {
             'project_id': keystone_client.project_id,
-            # nova client does not support v3 auth
-            'auth_url': keystone_client.auth_url.replace("/v3", "/v2.0"),
+            # nova client doesn't support v3 auth
+            'auth_url': keystone_client.auth_url,
             'service_type': 'compute',
             'user_id': keystone_client.user_id,
             'extensions': extensions,
@@ -63,23 +61,25 @@ class NovaClient(object):
 
     def get_machine(self, server):
         try:
-            self._client.servers.get(server)
+            self._client.servers.find(name=server)
             exists = True
         except exceptions.NotFound as ex:
             exists = False
         return exists
 
-    def deploy_machine(self, name, image_id):
+    def deploy_machine(self, name, image):
         LOG.debug("Creating a nova client")
-        self._machine = self._client.servers.create(
-            name=name,
-            image=image_id,
-            flavor='m1.nano'
-        )
+        args = {
+            'name': name,
+            'image': self._client.images.find(name=image),
+            'flavor': self._client.flavors.find(name='m1.tiny'),
+        }
+        self._machine = self._client.servers.create(**args)
 
     def delete_machine(self, name):
-        self._client.servers.delete(name=name)
+        server = self._client.servers.find(name=name)
+        server.delete()
 
     def get_ip(self):
         """Return the server's IP"""
-        return self._machine.server.addresses[0]
+        return self._client.servers.ips(self._machine)[0]

@@ -38,8 +38,8 @@ class ValidateController(object):
         g = GlanceClient(ks.kc)
 
         # find the image id
-        image_id = g.get_by_name(image)
-        if not image_id:
+        image = g.get_by_name(image)
+        if not image:
             raise exception.ImageNotFound
 
         n = NovaClient(ks.kc)
@@ -48,12 +48,11 @@ class ValidateController(object):
         if n.get_machine(machine):
             LOG.info(_LI("Server %s already exists, deleting" % machine))
             n.delete_machine(machine)
-
         # deploy machine
-        n.deploy_machine(machine, image_id=image_id)
-
+        n.deploy_machine(machine, image=image['name'])
+        ip = n.get_ip()
         # send knife command
-        c = ChefClient(n.get_ip())
+        c = ChefClient(ip)
         res = c.send_recipe(recipe)
         return {"resp": res}
 

@@ -12,7 +12,7 @@
 #  under the License.
 from oslo_config import cfg
 from oslo_utils import importutils
-from keystoneclient.v3 import client as ksclient
+from keystoneclient.v2_0 import client as ksclient
 
 
 class KeystoneClient(object):
