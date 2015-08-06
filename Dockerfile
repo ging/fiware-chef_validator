@@ -7,7 +7,7 @@
 FROM ubuntu:14.04
 
 # File Author / Maintainer
-MAINTAINER Pedro Verdugo <pmverdugo@dit.upm.es>
+MAINTAINER Pedro Verdugo <pmverdugo 'at' dit.upm.es>
 
 # Update the sources list
 RUN apt-get update

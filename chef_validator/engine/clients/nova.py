@@ -75,6 +75,14 @@ class NovaClient(object):
             'flavor': self._client.flavors.find(name='m1.tiny'),
         }
         self._machine = self._client.servers.create(**args)
+        import time
+        status = self._machine.status
+        while status == 'BUILD':
+            time.sleep(5)
+            # Retrieve the instance again so the status field updates
+            instance = self._client.servers.get(self._machine.id)
+            status = instance.status
+
 
     def delete_machine(self, name):
         server = self._client.servers.find(name=name)
@@ -82,4 +90,4 @@ class NovaClient(object):
 
     def get_ip(self):
         """Return the server's IP"""
-        return self._client.servers.ips(self._machine)[0]
+        return self._client.servers.ips(self._machine)['private'][0]['addr']

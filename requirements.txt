@@ -2,6 +2,7 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
+# Infrastructure
 pbr
 Babel
 eventlet
@@ -10,7 +11,6 @@ PasteDeploy
 webob
 Routes
 paramiko
-
 oslo.i18n
 oslo.log
 oslo.config
@@ -18,8 +18,14 @@ oslo.service
 oslo.middleware
 oslo.messaging
 
+# 1st step Authentication
 keystonemiddleware
+
+# Openstack Client APIs
 python-glanceclient
 python-keystoneclient
 python-novaclient
+
+# Chef Image Generation
+docker-py
 

@@ -50,7 +50,6 @@ class ChefClient(object):
             LOG.error(_LW("SSH connect exception %s" % e))
 
         # send deploy command
-        stdin, stdout, stderr = None
         try:
             stdin, stdout, stderr = ssh.exec_command(
                 "knife cookbook github install cookbooks/%s" % recipe
@@ -58,11 +57,13 @@ class ChefClient(object):
             stdin.flush()
         except Exception as e:
             LOG.error(_LW("SSH command send exception %s" % e))
+            stdout = "FATAL"
 
         # check execution output
         # todo: fine grained error parsing
         if stdout is None or "FATAL" in stdout:
-            LOG.error(_LW("Error deploying recipe %s" % recipe))
+            msg = "Error deploying recipe %s" % recipe
+            LOG.error(_LW(msg))
         else:
-            msg = _("Recipe %s successfully deployed")
+            msg = _("Recipe %s successfully deployed" % recipe)
         return msg
