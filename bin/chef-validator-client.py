@@ -21,18 +21,14 @@ from eventlet.green import urllib2
 
 from oslo_config import cfg
 
-from keystoneclient.openstack.common.apiclient.exceptions import \
-    AuthorizationFailure, Unauthorized
-from keystoneclient.v3 import client
-
 opts = [
     cfg.StrOpt('image', help="Glance Image to deploy"),
     cfg.StrOpt('recipe', help="Name of the recipe to deploy"),
     cfg.StrOpt('username', help="Keystone username"),
     cfg.StrOpt('password', help="Keystone password"),
     cfg.StrOpt('validator_url', help="Chef Validator Url"),
-    cfg.StrOpt('auth_url', help="Keystone Auth Url"),
 ]
+
 cfg.CONF.register_cli_opts(opts)
 cfg.CONF(sys.argv[1:])
 
@@ -41,11 +37,10 @@ CONF = cfg.CONF
 DEBUG = True
 USERNAME = os.environ.get('OS_USERNAME', CONF.username)
 PASSWORD = os.environ.get('OS_PASSWORD', CONF.password)
-AUTH_URL = os.environ.get('OS_AUTH_URL', CONF.auth_url)
 VALIDATOR_URL = os.environ.get('CHEF_VALIDATOR_URL', CONF.validator_url)
 
 
-def main():
+def client():
     """ Sends a static request based on commandline arguments,
     logs the response """
     log_lvl = logging.DEBUG if DEBUG else logging.WARNING
@@ -53,36 +48,20 @@ def main():
         format="%(levelname)s (%(module)s:%(lineno)d) %(message)s",
         level=log_lvl)
     logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
-    auth_token = None
-    print AUTH_URL
-    client_kwargs = {
-        'debug': DEBUG,
-        'username': USERNAME,
-        'password': PASSWORD,
-        'auth_url': AUTH_URL,
+    postdata = {
+        "recipe": CONF.recipe,
+        "image": CONF.image
     }
-    try:
-        c = client.Client(**client_kwargs)
-        c.authenticate()
-        auth_token = c.auth_token
-    except AuthorizationFailure as auf:
-        LOG.error(auf.message)
-    except Unauthorized as unauth:
-        LOG.error(unauth.message)
-    if auth_token is not None:
-        postdata = {
-            "recipe": CONF.recipe,
-            "image": CONF.image
-        }
-        # sends the request
-        req = urllib2.Request(VALIDATOR_URL)
-        req.add_header('Content-Type', 'application/json')
-        req.add_header('X-Auth-Token', auth_token)
-        data = json.dumps(postdata)
-        response = urllib2.urlopen(req, data)
-        data = response.read()
-        LOG.info(data)
+    # sends the request
+    req = urllib2.Request(VALIDATOR_URL)
+    req.add_header('Content-Type', 'application/json')
+    req.add_header('X-Auth-User', USERNAME)
+    req.add_header('X-Auth-Key', PASSWORD)
+    data = json.dumps(postdata)
+    response = urllib2.urlopen(req, data)
+    data = response.read()
+    LOG.info(data)
 
 
 if __name__ == '__main__':
-    main()
+    client()
