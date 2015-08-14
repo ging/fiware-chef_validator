@@ -37,7 +37,6 @@ class ChefClient(object):
         self._password = CONF.clients_chef.password
 
     def send_recipe(self, recipe):
-        msg = _("Unknown")
         LOG.debug("Sending recipe to %s" % self._ip)
 
         # connecto to machine

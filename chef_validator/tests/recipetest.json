@@ -1,6 +1,4 @@
 {
-  "recipe": {
-    "url": "https://github.com/opscode-cookbooks/memcached",
-    "machine": "chef_client"
-  }
+  "recipe": "memcached",
+  "image": "chef_client"
 }

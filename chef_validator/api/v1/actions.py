@@ -20,6 +20,7 @@ from chef_validator.clients.chef import ChefClient
 from chef_validator.clients.glance import GlanceClient
 from chef_validator.clients.keystone import KeystoneClient
 from chef_validator.clients.nova import NovaClient
+import chef_validator.common.utils
 
 LOG = logging.getLogger(__name__)
 
@@ -61,6 +62,6 @@ def create_resource():
     """
     Actions action factory method.
     """
-    deserializer = wsgi.JSONDeserializer()
-    serializer = wsgi.JSONSerializer()
+    deserializer = chef_validator.common.utils.JSONDeserializer()
+    serializer = chef_validator.common.utils.JSONSerializer()
     return wsgi.Resource(ValidateController(), deserializer, serializer)

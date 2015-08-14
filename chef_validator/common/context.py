@@ -141,19 +141,25 @@ class RequestContext(context.RequestContext):
             # only have a token but don't load a service catalog then
             # url_for wont work. Stub with the keystone endpoint so at
             # least it might be right.
-            return token_endpoint.Token(endpoint=self._keystone_v3_endpoint,
-                                        token=self.auth_token)
+            return token_endpoint.Token(
+                endpoint=self._keystone_v3_endpoint,
+                token=self.auth_token
+            )
 
         if self.password:
-            return v3.Password(username=self.username,
-                               password=self.password,
-                               project_name=self.tenant,
-                               project_id=self.tenant_id,
-                               user_domain_id='default',
-                               project_domain_id='default',
-                               auth_url=self._keystone_v3_endpoint)
-        LOG.error(_LE("Keystone v3 API connection failed, no password "
-                      "trust or auth_token!"))
+            return v3.Password(
+                username=self.username,
+                password=self.password,
+                project_name=self.tenant,
+                project_id=self.tenant_id,
+                user_domain_id='default',
+                project_domain_id='default',
+                auth_url=self._keystone_v3_endpoint
+            )
+        LOG.error(
+            _LE("Keystone v3 API connection failed, no password "
+            "trust or auth_token!")
+        )
         raise exception.AuthorizationFailure()
 
     @property

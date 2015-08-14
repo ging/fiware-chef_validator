@@ -15,11 +15,6 @@
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
 
 
-class Error(Exception):
-    def __init__(self, message=None):
-        super(Error, self).__init__(message)
-
-
 class OpenstackException(Exception):
     """Base Exception class.
 
@@ -65,12 +60,6 @@ class NotAuthenticated(OpenstackException):
 
 class ImageNotFound(OpenstackException):
     msg_fmt = "The requested Image doesn't exist for the given user"
-
-
-class NotFound(OpenstackException):
-    def __init__(self, msg_fmt='Not found'):
-        self.msg_fmt = msg_fmt
-        super(NotFound, self).__init__()
 
 
 class EntityNotFound(OpenstackException):

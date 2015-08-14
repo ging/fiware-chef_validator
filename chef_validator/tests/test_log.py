@@ -16,10 +16,10 @@
 import logging
 import sys
 
-from chef_validator.tests import base
+from chef_validator.tests import tb
 
 
-class SysLogHandlersTestCase(base.ValidatorTestCase):
+class SysLogHandlersTestCase(tb.ValidatorTestCase):
     """Test for standard and RFC compliant Syslog handlers."""
 
     def setUp(self):

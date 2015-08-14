@@ -15,16 +15,16 @@
 import abc
 import time
 import errno
-import logging as sys_logging
-import datetime
-import routes.middleware
 
+import routes.middleware
 from paste import deploy
 import routes
 import six
 import webob.dec
 import webob.exc
 import eventlet
+
+from chef_validator.common.utils import JSONSerializer, JSONDeserializer
 
 eventlet.patcher.monkey_patch(all=False, socket=True)
 import eventlet.wsgi
@@ -33,7 +33,6 @@ from eventlet.green import socket
 from oslo_service import service
 from oslo_service import sslutils
 from oslo_log import log as logging
-from oslo_serialization import jsonutils
 from oslo_utils import importutils
 from oslo_config import cfg
 
@@ -42,17 +41,6 @@ from chef_validator.common.i18n import _, _LW
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-
-
-class WritableLogger(object):
-    """A thin wrapper that responds to `write` and logs."""
-
-    def __init__(self, log, level=sys_logging.DEBUG):
-        self.LOG = log
-        self.level = level
-
-    def write(self, msg):
-        self.LOG.log(self.level, msg.rstrip("\n"))
 
 
 class Service(service.Service):
@@ -143,8 +131,12 @@ class Service(service.Service):
     def _run(self, application, asocket):
         """Start a WSGI server in a new green thread."""
         logger = logging.getLogger('eventlet.wsgi')
-        eventlet.wsgi.server(asocket, application, custom_pool=self.tg.pool,
-                             log=WritableLogger(logger))
+        eventlet.wsgi.server(
+            asocket,
+            application,
+            custom_pool=self.tg.pool,
+            log=logger
+        )
 
 
 class Middleware(object):
@@ -222,39 +214,6 @@ class Request(webob.Request):
         if content_type not in allowed_content_types:
             raise exception.InvalidContentType(content_type=content_type)
         return content_type
-
-
-class JSONDeserializer(object):
-    def dispatch(self, *args, **kwargs):
-        """Find and call local method."""
-        action = kwargs.pop('action', 'default')
-        action_method = getattr(self, str(action), self.default)
-        return action_method(*args, **kwargs)
-
-    def deserialize(self, request, action='default'):
-        return self.dispatch(request, action=action)
-
-    @staticmethod
-    def default(request):
-        try:
-            return {'body': jsonutils.loads(request.body)}
-        except ValueError:
-            raise exception.MalformedRequestBody(
-                reason=_("cannot understand JSON"))
-
-
-class JSONSerializer(object):
-    @staticmethod
-    def default(response, result):
-        response.content_type = 'application/json'
-
-        def sanitizer(obj):
-            if isinstance(obj, datetime.datetime):
-                return obj.isoformat()
-            return obj
-
-        response.body = jsonutils.dumps(result, default=sanitizer)
-        LOG.debug("JSON response : %s" % response)
 
 
 class Resource(object):

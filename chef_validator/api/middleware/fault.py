@@ -17,6 +17,7 @@ import webob
 from oslo_config import cfg
 
 from chef_validator.common import wsgi
+import chef_validator.common.utils
 
 
 class HTTPExceptionDisguise(Exception):
@@ -35,7 +36,7 @@ class Fault(object):
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
-        serializer = wsgi.JSONDictSerializer()
+        serializer = chef_validator.common.utils.JSONSerializer()
         resp = webob.Response(request=req)
         default_webob_exc = webob.exc.HTTPInternalServerError()
         resp.status_code = self.error.get('code', default_webob_exc.code)
