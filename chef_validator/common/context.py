@@ -15,7 +15,6 @@ from keystoneclient import access
 from keystoneclient.auth.identity import access as access_plugin
 from keystoneclient.auth.identity import v3
 from keystoneclient.auth import token_endpoint
-
 from oslo_config import cfg
 from oslo_context import context
 from oslo_log import log as logging
@@ -27,7 +26,7 @@ import six
 from chef_validator.common import exception
 from chef_validator.common.i18n import _LE
 from chef_validator.common import wsgi
-from chef_validator.engine import clients
+from chef_validator import clients
 
 LOG = logging.getLogger(__name__)
 

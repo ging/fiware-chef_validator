@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may
 #  not use this file except in compliance with the License. You may obtain
 #  a copy of the License at
@@ -36,8 +37,6 @@ class OpenstackException(Exception):
             if _FATAL_EXCEPTION_FORMAT_ERRORS:
                 raise
             else:
-                # at least get the chef_validator message out
-                # if something happened
                 self._error_string = self.msg_fmt
 
     def __str__(self):
@@ -76,3 +75,20 @@ class NotFound(OpenstackException):
 
 class EntityNotFound(OpenstackException):
     msg_fmt = "The %(entity)s (%(name)s) could not be found."
+
+
+# Chef exceptions
+class SshConnectException(OpenstackException):
+    msg_fmt = "The SSH connection to %(host)s could not be stablished."
+
+
+class CookbookInstallException(OpenstackException):
+    msg_fmt = "Error installing cookbook %(recipe)s"
+
+
+class CookbookSyntaxException(OpenstackException):
+    msg_fmt = "The provided cookbook syntax is incorrect for %(recipe)s"
+
+
+class RecipeDeploymentException(OpenstackException):
+    msg_fmt = "Error deploying the provided recipe: %(recipe)s"

@@ -82,7 +82,7 @@ class NovaClient(object):
             # Retrieve the instance again so the status field updates
             instance = self._client.servers.get(self._machine.id)
             status = instance.status
-
+        print status
 
     def delete_machine(self, name):
         server = self._client.servers.find(name=name)

@@ -15,11 +15,11 @@ from oslo_log import log as logging
 
 from chef_validator.common import wsgi
 from chef_validator.common import exception
-from chef_validator.common.i18n import _LI, _
-from chef_validator.engine.clients.chef import ChefClient
-from chef_validator.engine.clients.glance import GlanceClient
-from chef_validator.engine.clients.keystone import KeystoneClient
-from chef_validator.engine.clients.nova import NovaClient
+from chef_validator.common.i18n import _LI
+from chef_validator.clients.chef import ChefClient
+from chef_validator.clients.glance import GlanceClient
+from chef_validator.clients.keystone import KeystoneClient
+from chef_validator.clients.nova import NovaClient
 
 LOG = logging.getLogger(__name__)
 

@@ -14,6 +14,8 @@
 import paramiko
 from oslo_log import log as logging
 from oslo_config import cfg
+from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, RecipeDeploymentException, \
+    CookbookInstallException
 
 from chef_validator.common.i18n import _, _LW
 
@@ -48,8 +50,9 @@ class ChefClient(object):
                         )
         except Exception as e:
             LOG.error(_LW("SSH connect exception %s" % e))
+            raise SshConnectException(host=self._ip)
 
-        # send deploy command
+        # install cookbook
         try:
             stdin, stdout, stderr = ssh.exec_command(
                 "knife cookbook github install cookbooks/%s" % recipe
@@ -57,11 +60,31 @@ class ChefClient(object):
             stdin.flush()
         except Exception as e:
             LOG.error(_LW("SSH command send exception %s" % e))
-            stdout = "FATAL"
+            raise CookbookInstallException(recipe=recipe)
+
+        # test cookbook syntax
+        try:
+            stdin, stdout, stderr = ssh.exec_command(
+                "knife cookbook test %s" % recipe
+            )
+            stdin.flush()
+        except Exception as e:
+            LOG.error(_LW("Cookbook syntax exception %s" % e))
+            raise CookbookSyntaxException(recipe=recipe)
+
+        # launch recipe deployment
+        try:
+            stdin, stdout, stderr = ssh.exec_command(
+                "Chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
+            )
+            stdin.flush()
+        except Exception as e:
+            LOG.error(_LW("Recipe deployment exception %s" % e))
+            raise RecipeDeploymentException(recipe=recipe)
 
         # check execution output
-        # todo: fine grained error parsing
         if stdout is None or "FATAL" in stdout:
+            # better to provide server error messages (500) to the client
             msg = "Error deploying recipe %s" % recipe
             LOG.error(_LW(msg))
         else:
