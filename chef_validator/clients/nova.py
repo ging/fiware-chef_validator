@@ -13,9 +13,11 @@
 
 from novaclient import client as nc
 from novaclient import exceptions
+from novaclient.exceptions import NotFound
 
 from oslo_log import log as logging
 from oslo_config import cfg
+from chef_validator.common.exception import AmbiguousNameException, ImageNotFound
 
 LOG = logging.getLogger(__name__)
 opts = [
@@ -28,36 +30,53 @@ CONF.register_opts(opts, group="clients_nova")
 
 
 class NovaClient(object):
-    def __init__(self, ksc):
-        self._client = self.create_nova_client(ksc)
+    def __init__(self, context):
+        self._client = self.create_nova_client(context)
+        self._client.authenticate()
         self._machine = None
 
     @staticmethod
-    def create_nova_client(keystone_client):
+    def create_nova_client(context):
+        api_version = CONF.clients_nova.api_version
         endpoint_type = CONF.clients_nova.endpoint_type
-        # nova_endpoint = CONF.clients_nova.endpoint
-        nova_endpoint = None
-        if nova_endpoint is None:
-            nova_endpoint = keystone_client.service_catalog.url_for(
-                service_type='compute',
-                endpoint_type=endpoint_type
-            )
-        extensions = nc.discover_extensions(CONF.clients_nova.api_version)
+        nova_endpoint = CONF.clients_nova.endpoint
         args = {
-            'project_id': keystone_client.project_id,
-            # nova client doesn't support v3 auth
-            'auth_url': keystone_client.auth_url,
+            'tenant_id': context.tenant_id,
+            'auth_url': context.auth_url,
             'service_type': 'compute',
-            'user_id': keystone_client.user_id,
-            'extensions': extensions,
-            'endpoint_type': CONF.clients_nova.endpoint_type,
+            'user_id': context.user_id,
+            'endpoint_type': endpoint_type,
             'bypass_url': nova_endpoint,
-            'auth_token': keystone_client.auth_token
+            'auth_token': context.auth_token
         }
         return nc.Client(
-            CONF.clients_nova.api_version,
+            api_version,
             **args
         )
+
+    def list(self):
+        images = self._client.images.list()
+        print images
+        while True:
+            try:
+                image = images.next()
+                yield self._format(image)
+            except StopIteration:
+                break
+
+    @staticmethod
+    def _format(image):
+        res = {"id": image.id, "name": image.name}
+        return res
+
+    def get_image_by_name(self, name):
+        images = [i for i in self._client.images.list() if name == i.name]
+        if len(images) == 0:
+            raise ImageNotFound(name=name)
+        elif len(images) > 1:
+            raise AmbiguousNameException(name=name)
+        else:
+            return self._format(images[0])
 
     def get_machine(self, server):
         try:

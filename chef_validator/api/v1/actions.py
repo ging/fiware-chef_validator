@@ -12,13 +12,12 @@
 #  under the License.
 
 from oslo_log import log as logging
+from webob import exc
 
 from chef_validator.common import wsgi
 from chef_validator.common import exception
-from chef_validator.common.i18n import _LI
+from chef_validator.common.i18n import _LI, _
 from chef_validator.clients.chef import ChefClient
-from chef_validator.clients.glance import GlanceClient
-from chef_validator.clients.keystone import KeystoneClient
 from chef_validator.clients.nova import NovaClient
 import chef_validator.common.utils
 
@@ -30,28 +29,38 @@ class ValidateController(object):
     Validate Controller Object
     Implements Application logic
     """
-    def validate(self, request, body):
-        recipe = body['recipe']
-        image = body['image']
+
+    @staticmethod
+    def validate(request, body):
+        body = body or {}
+        if len(body) < 1:
+            raise exc.HTTPBadRequest(_("No action specified"))
+        try:
+            recipe = body['recipe']
+            image = body['image']
+        except KeyError:
+            raise exc.HTTPBadRequest(_("Insufficient payload"))
+
         LOG.info(_LI('Processing Request'))
-        token = request.environ['keystone.token_info']['token']
-        ks = KeystoneClient(token)
-        g = GlanceClient(ks.kc)
+        n = NovaClient(request.context)
 
         # find the image id
-        image = g.get_by_name(image)
+        image = n.get_image_by_name(image)
         if not image:
             raise exception.ImageNotFound
+            # raise exc.HTTPInternalServerError(_("Image not found %s") % image)
 
-        n = NovaClient(ks.kc)
         machine = "%s-validate" % body['image']
+
         # if the machine already exists, destroy it
         if n.get_machine(machine):
             LOG.info(_LI("Server %s already exists, deleting" % machine))
             n.delete_machine(machine)
+
         # deploy machine
         n.deploy_machine(machine, image=image['name'])
         ip = n.get_ip()
+
         # send knife command
         c = ChefClient(ip)
         res = c.send_recipe(recipe)

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-15 11:12+0200\n"
-"PO-Revision-Date: 2015-07-15 11:12+0200\n"
+"POT-Creation-Date: 2015-08-14 18:07+0200\n"
+"PO-Revision-Date: 2015-08-14 18:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -18,11 +18,72 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: chef_validator/common/config.py:31
+#: chef_validator/clients/chef.py:90
+#, python-format
+msgid "Recipe %s successfully deployed"
+msgstr ""
+
+#: chef_validator/common/auth_url.py:45
+msgid "Request missing required header X-Auth-Url"
+msgstr ""
+
+#: chef_validator/common/auth_url.py:49
+#, python-format
+msgid "Header X-Auth-Url \"%s\" not an allowed endpoint"
+msgstr ""
+
+#: chef_validator/common/config.py:45
 msgid "Name of the engine node."
 msgstr ""
 
-#: chef_validator/common/config.py:32
+#: chef_validator/common/config.py:47
 msgid "Listening port of the engine node."
+msgstr ""
+
+#: chef_validator/common/config.py:55
+msgid "The API config file to use."
+msgstr ""
+
+#: chef_validator/common/config.py:56
+msgid "The flavor to use."
+msgstr ""
+
+#: chef_validator/common/config.py:65
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication "
+"with the OpenStack service."
+msgstr ""
+
+#: chef_validator/common/config.py:112
+#, python-format
+msgid "Unable to locate paste config file for %s."
+msgstr ""
+
+#: chef_validator/common/config.py:134
+msgid "Unable to locate config file"
+msgstr ""
+
+#: chef_validator/common/config.py:142
+#, python-format
+msgid ""
+"Unable to load %(app_name)s from configuration file %(conf_file)s. \n"
+"Got: %(e)r"
+msgstr ""
+
+#: chef_validator/common/utils.py:53
+msgid "cannot understand JSON"
+msgstr ""
+
+#: chef_validator/common/wsgi.py:82
+#, python-format
+msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
+msgstr ""
+
+#: chef_validator/common/wsgi.py:258
+msgid "Unsupported Content-Type"
+msgstr ""
+
+#: chef_validator/common/wsgi.py:261
+msgid "Malformed request body"
 msgstr ""
 

@@ -69,8 +69,6 @@ clients_opts = [
 CONF.register_opts(clients_opts)
 
 
-
-
 def parse_args(args=None, usage=None, default_config_files=None):
     CONF(args=args,
          project='chef_validator',

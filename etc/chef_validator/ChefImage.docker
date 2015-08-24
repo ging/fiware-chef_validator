@@ -1,3 +1,4 @@
+# Dockerfile to deploy a valid chef-solo container
 FROM ubuntu:14.04
 MAINTAINER Pedro Verdugo <pmverdugo 'at' dit.upm.es>
 

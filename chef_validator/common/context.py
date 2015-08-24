@@ -26,9 +26,9 @@ import six
 from chef_validator.common import exception
 from chef_validator.common.i18n import _LE
 from chef_validator.common import wsgi
-from chef_validator import clients
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class RequestContext(context.RequestContext):
@@ -51,12 +51,15 @@ class RequestContext(context.RequestContext):
          :param kwargs: Extra arguments that might be present, but we ignore
             because they possibly came in from older rpc messages.
         """
-        super(RequestContext, self).__init__(auth_token=auth_token,
-                                             user=username, tenant=tenant,
-                                             is_admin=is_admin,
-                                             read_only=read_only,
-                                             show_deleted=show_deleted,
-                                             request_id=request_id)
+        super(RequestContext, self).__init__(
+            auth_token=auth_token,
+            user=username,
+            tenant=tenant,
+            is_admin=is_admin,
+            read_only=read_only,
+            show_deleted=show_deleted,
+            request_id=request_id
+        )
 
         self.username = username
         self.user_id = user_id
@@ -73,12 +76,6 @@ class RequestContext(context.RequestContext):
         self.trustor_user_id = trustor_user_id
         self._auth_plugin = auth_plugin
         self.is_admin = is_admin
-
-    @property
-    def clients(self):
-        if self._clients is None:
-            self._clients = clients.Clients(self)
-        return self._clients
 
     def to_dict(self):
         user_idt = '{user} {tenant}'.format(user=self.username or '-',
@@ -113,15 +110,15 @@ class RequestContext(context.RequestContext):
             auth_uri = self.auth_url
         else:
             importutils.import_module('keystonemiddleware.auth_token')
-            auth_uri = cfg.CONF.keystone_authtoken.auth_uri
+            auth_uri = CONF.keystone_authtoken.auth_uri
 
         return auth_uri.replace('v2.0', 'v3')
 
     def _create_auth_plugin(self):
         if self.trust_id:
             importutils.import_module('keystonemiddleware.auth_token')
-            username = cfg.CONF.keystone_authtoken.admin_user
-            password = cfg.CONF.keystone_authtoken.admin_password
+            username = CONF.keystone_authtoken.admin_user
+            password = CONF.keystone_authtoken.admin_password
 
             return v3.Password(username=username,
                                password=password,
@@ -221,22 +218,23 @@ class ContextMiddleware(wsgi.Middleware):
             token_info = environ.get('keystone.token_info')
             auth_plugin = environ.get('keystone.token_auth')
             req_id = environ.get(oslo_request_id.ENV_REQUEST_ID)
-
         except Exception:
             raise exception.NotAuthenticated()
-
-        req.context = self.make_context(auth_token=token,
-                                        tenant=tenant, tenant_id=tenant_id,
-                                        aws_creds=aws_creds,
-                                        username=username,
-                                        user_id=user_id,
-                                        password=password,
-                                        auth_url=auth_url,
-                                        roles=roles,
-                                        request_id=req_id,
-                                        auth_token_info=token_info,
-                                        region_name=region_name,
-                                        auth_plugin=auth_plugin)
+        req.context = self.make_context(
+            auth_token=token,
+            tenant=tenant,
+            tenant_id=tenant_id,
+            aws_creds=aws_creds,
+            username=username,
+            user_id=user_id,
+            password=password,
+            auth_url=auth_url,
+            roles=roles,
+            request_id=req_id,
+            auth_token_info=token_info,
+            region_name=region_name,
+            auth_plugin=auth_plugin
+        )
 
 
 def ContextMiddleware_filter_factory(global_conf, **local_conf):

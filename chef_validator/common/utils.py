@@ -13,11 +13,16 @@
 #  under the License.
 
 from __future__ import unicode_literals
+
 import datetime
+
 from oslo_serialization import jsonutils
+from oslo_log import log as logging
+
 from chef_validator.common import exception
 from chef_validator.common.i18n import _
-from chef_validator.common.wsgi import LOG
+
+LOG = logging.getLogger(__name__)
 
 
 class JSONSerializer(object):

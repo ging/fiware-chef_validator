@@ -11,7 +11,7 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-import paramiko
+
 from oslo_log import log as logging
 from oslo_config import cfg
 from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, RecipeDeploymentException, \
@@ -27,6 +27,15 @@ opts = [
 ]
 CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_chef")
+
+
+# todo mockup for pycrypto dependencies on win
+class paramiko:
+    def SSHClient(self):
+        pass
+
+    def AutoAddPolicy(self):
+        pass
 
 
 class ChefClient(object):

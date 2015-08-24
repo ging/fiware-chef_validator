@@ -10,22 +10,21 @@ Paste
 PasteDeploy
 webob
 Routes
-paramiko
+# paramiko
 oslo.i18n
 oslo.log
 oslo.config
-oslo.service
 oslo.middleware
-oslo.messaging
+# oslo.messaging
 
 # 1st step Authentication
 keystonemiddleware
 
 # Openstack Client APIs
-python-glanceclient
-python-keystoneclient
 python-novaclient
 
 # Chef Image Generation
 docker-py
 
+# Deployment automation
+tox

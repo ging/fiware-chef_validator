@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may
 #  not use this file except in compliance with the License. You may obtain
 #  a copy of the License at
@@ -10,33 +11,32 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-import sys
+"""A middleware that turns exceptions into parsable string.
+Inspired by Cinder's faultwrapper
+"""
+from __future__ import unicode_literals
+
+import six
+
 import traceback
-import webob
 
 from oslo_config import cfg
+import webob
+
+from chef_validator.common import exception
 
 from chef_validator.common import wsgi
-import chef_validator.common.utils
-
-
-class HTTPExceptionDisguise(Exception):
-    """Disguises HTTP exceptions so they can be handled by the webob fault
-    application in the wsgi pipeline.
-    """
-
-    def __init__(self, exception):
-        self.exc = exception
-        self.tb = sys.exc_info()[2]
+from chef_validator.common.utils import JSONSerializer
 
 
 class Fault(object):
+
     def __init__(self, error):
         self.error = error
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
-        serializer = chef_validator.common.utils.JSONSerializer()
+        serializer = JSONSerializer()
         resp = webob.Response(request=req)
         default_webob_exc = webob.exc.HTTPInternalServerError()
         resp.status_code = self.error.get('code', default_webob_exc.code)
@@ -47,20 +47,46 @@ class Fault(object):
 class FaultWrapper(wsgi.Middleware):
     """Replace error body with something the client can parse."""
 
-    @classmethod
-    def factory(cls, global_conf, **local_conf):
-        def filter(app):
-            return cls(app)
-
-        return filter
-
     error_map = {
+        'AttributeError': webob.exc.HTTPBadRequest,
+        'ActionInProgress': webob.exc.HTTPConflict,
         'ValueError': webob.exc.HTTPBadRequest,
-        'LookupError': webob.exc.HTTPNotFound,
-        'PackageClassLoadError': webob.exc.HTTPBadRequest,
-        'PackageUILoadError': webob.exc.HTTPBadRequest,
-        'PackageLoadError': webob.exc.HTTPBadRequest,
-        'PackageFormatError': webob.exc.HTTPBadRequest,
+        'EntityNotFound': webob.exc.HTTPNotFound,
+        'StackNotFound': webob.exc.HTTPNotFound,
+        'NotFound': webob.exc.HTTPNotFound,
+        'ResourceActionNotSupported': webob.exc.HTTPBadRequest,
+        'ResourceNotFound': webob.exc.HTTPNotFound,
+        'ResourceTypeNotFound': webob.exc.HTTPNotFound,
+        'SnapshotNotFound': webob.exc.HTTPNotFound,
+        'ResourceNotAvailable': webob.exc.HTTPNotFound,
+        'PhysicalResourceNotFound': webob.exc.HTTPNotFound,
+        'InvalidTenant': webob.exc.HTTPForbidden,
+        'Forbidden': webob.exc.HTTPForbidden,
+        'StackExists': webob.exc.HTTPConflict,
+        'StackValidationFailed': webob.exc.HTTPBadRequest,
+        'InvalidSchemaError': webob.exc.HTTPBadRequest,
+        'InvalidTemplateReference': webob.exc.HTTPBadRequest,
+        'InvalidTemplateVersion': webob.exc.HTTPBadRequest,
+        'InvalidTemplateSection': webob.exc.HTTPBadRequest,
+        'UnknownUserParameter': webob.exc.HTTPBadRequest,
+        'RevertFailed': webob.exc.HTTPInternalServerError,
+        'StopActionFailed': webob.exc.HTTPInternalServerError,
+        'EventSendFailed': webob.exc.HTTPInternalServerError,
+        'ServerBuildFailed': webob.exc.HTTPInternalServerError,
+        'NotSupported': webob.exc.HTTPBadRequest,
+        'MissingCredentialError': webob.exc.HTTPBadRequest,
+        'UserParameterMissing': webob.exc.HTTPBadRequest,
+        'RequestLimitExceeded': webob.exc.HTTPBadRequest,
+        'InvalidTemplateParameter': webob.exc.HTTPBadRequest,
+        'Invalid': webob.exc.HTTPBadRequest,
+        'ResourcePropertyConflict': webob.exc.HTTPBadRequest,
+        'PropertyUnspecifiedError': webob.exc.HTTPBadRequest,
+        'ObjectFieldInvalid': webob.exc.HTTPBadRequest,
+        'ReadOnlyFieldError': webob.exc.HTTPBadRequest,
+        'ObjectActionError': webob.exc.HTTPBadRequest,
+        'IncompatibleObjectVersion': webob.exc.HTTPBadRequest,
+        'OrphanedObjectError': webob.exc.HTTPBadRequest,
+        'UnsupportedObjectError': webob.exc.HTTPBadRequest,
     }
 
     def _map_exception_to_error(self, class_exception):
@@ -75,8 +101,9 @@ class FaultWrapper(wsgi.Middleware):
     def _error(self, ex):
 
         trace = None
+        traceback_marker = 'Traceback (most recent call last)'
         webob_exc = None
-        if isinstance(ex, HTTPExceptionDisguise):
+        if isinstance(ex, exception.HTTPExceptionDisguise):
             # An HTTP exception was disguised so it could make it here
             # let's remove the disguise and set the original HTTP exception
             if cfg.CONF.debug:
@@ -86,12 +113,23 @@ class FaultWrapper(wsgi.Middleware):
 
         ex_type = ex.__class__.__name__
 
-        full_message = unicode(ex)
-        if full_message.find('\n') > -1:
+        is_remote = ex_type.endswith('_Remote')
+        if is_remote:
+            ex_type = ex_type[:-len('_Remote')]
+
+        full_message = six.text_type(ex)
+        if '\n' in full_message and is_remote:
             message, msg_trace = full_message.split('\n', 1)
+        elif traceback_marker in full_message:
+            message, msg_trace = full_message.split(traceback_marker, 1)
+            message = message.rstrip('\n')
+            msg_trace = traceback_marker + msg_trace
         else:
             msg_trace = traceback.format_exc()
             message = full_message
+
+        if isinstance(ex, exception.OpenstackException):
+            message = ex._error_string
 
         if cfg.CONF.debug and not trace:
             trace = msg_trace
@@ -117,3 +155,7 @@ class FaultWrapper(wsgi.Middleware):
             return req.get_response(self.application)
         except Exception as exc:
             return req.get_response(Fault(self._error(exc)))
+
+
+def faultwrap_filter(app, conf, **local_conf):
+    return FaultWrapper(app)

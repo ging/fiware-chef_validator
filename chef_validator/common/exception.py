@@ -11,6 +11,9 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
+import sys
+
+from chef_validator.common.i18n import _
 
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
 
@@ -22,7 +25,7 @@ class OpenstackException(Exception):
     a 'msg_fmt' property. That message will get printf'd
     with the keyword arguments provided to the constructor.
     """
-    msg_fmt = "An unknown exception occurred"
+    msg_fmt = _("An unknown exception occurred")
 
     def __init__(self, **kwargs):
         try:
@@ -38,46 +41,57 @@ class OpenstackException(Exception):
         return self._error_string
 
 
+class HTTPExceptionDisguise(Exception):
+    """Disguises HTTP exceptions so they can be handled by the webob fault
+    application in the wsgi pipeline.
+    """
+
+    def __init__(self, exception):
+        self.exc = exception
+        self.tb = sys.exc_info()[2]
+
+
 class InvalidContentType(OpenstackException):
-    msg_fmt = "Invalid content type %(content_type)s"
+    msg_fmt = _("Invalid content type %(content_type)s")
 
 
 class MalformedRequestBody(OpenstackException):
-    msg_fmt = "Malformed message body: %(reason)s"
+    msg_fmt = _("Malformed message body: %(reason)s")
 
 
 class AuthorizationFailure(OpenstackException):
-    msg_fmt = "Authorization failed."
-
-
-class TimeoutException(Exception):
-    pass
+    msg_fmt = _("Authorization failed.")
 
 
 class NotAuthenticated(OpenstackException):
-    msg_fmt = "Authentication failed."
-
-
-class ImageNotFound(OpenstackException):
-    msg_fmt = "The requested Image doesn't exist for the given user"
+    msg_fmt = _("Authentication failed.")
 
 
 class EntityNotFound(OpenstackException):
-    msg_fmt = "The %(entity)s (%(name)s) could not be found."
+    msg_fmt = _("The %(entity)s (%(name)s) could not be found.")
+
+
+# Image exceptions
+class ImageNotFound(OpenstackException):
+    msg_fmt = _("The Image %(name)s doesn't exist for the given user")
+
+
+class AmbiguousNameException(OpenstackException):
+    msg_fmt = _("Image name '%(name)s' is ambiguous")
 
 
 # Chef exceptions
 class SshConnectException(OpenstackException):
-    msg_fmt = "The SSH connection to %(host)s could not be stablished."
+    msg_fmt = _("The SSH connection to %(host)s could not be stablished.")
 
 
 class CookbookInstallException(OpenstackException):
-    msg_fmt = "Error installing cookbook %(recipe)s"
+    msg_fmt = _("Error installing cookbook %(recipe)s")
 
 
 class CookbookSyntaxException(OpenstackException):
-    msg_fmt = "The provided cookbook syntax is incorrect for %(recipe)s"
+    msg_fmt = _("The provided cookbook syntax is incorrect for %(recipe)s")
 
 
 class RecipeDeploymentException(OpenstackException):
-    msg_fmt = "Error deploying the provided recipe: %(recipe)s"
+    msg_fmt = _("Error deploying the provided recipe: %(recipe)s")
