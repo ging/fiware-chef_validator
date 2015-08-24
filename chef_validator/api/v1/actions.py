@@ -63,7 +63,7 @@ class ValidateController(object):
 
         # send knife command
         c = ChefClient(ip)
-        res = c.send_recipe(recipe)
+        res = c.test_recipe(recipe)
         return {"resp": res}
 
 

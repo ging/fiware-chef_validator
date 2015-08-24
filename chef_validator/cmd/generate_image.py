@@ -21,7 +21,7 @@ import subprocess
 from docker import Client as DockerClient
 from glanceclient.v2 import client as GlanceClient
 from oslo_config import cfg
-from credentials import get_glance_connection
+from chef_validator.common.credentials import get_glance_connection
 
 CONF = cfg.CONF
 LOG = logging.getLogger()
@@ -29,8 +29,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def dock_image():
+    import sys
     dc = DockerClient(base_url='unix://var/run/docker.sock')
-    with open(r"./ChefImage.docker") as dockerfile:
+    # inject config files dir to syspath
+    sys.path.insert(0, CONF.config_dir)
+    with open(r"ChefImage.docker") as dockerfile:
         resp = dc.build(
             fileobj=dockerfile,
             rm=True,

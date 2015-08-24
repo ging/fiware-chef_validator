@@ -33,3 +33,13 @@ RUN /opt/chefdk/embedded/bin/gem install knife-github-cookbooks && \
     git add .dummy && \
     git commit -a --allow-empty-message -m '' && \
     rm -rf /tmp/*
+
+# Configure Chef-solo
+COPY ./solo.rb /etc/chef
+COPY ./solo.json /etc/chef
+
+# Set the default directory where CMD will execute
+WORKDIR /etc/chef
+
+# Bash command prompt by default
+CMD ["/bin/bash"]
