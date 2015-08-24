@@ -77,4 +77,4 @@ doc/Makefile
 doc/build
 
 # Test Environment
-.testrepository/
+.testrepository
