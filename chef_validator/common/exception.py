@@ -95,3 +95,7 @@ class CookbookSyntaxException(OpenstackException):
 
 class RecipeDeploymentException(OpenstackException):
     msg_fmt = _("Error deploying the provided recipe: %(recipe)s")
+
+
+class DockerContainerException(OpenstackException):
+    msg_fmt = _("Error deploying the provided image: %(image)s")

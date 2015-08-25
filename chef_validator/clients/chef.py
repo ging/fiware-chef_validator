@@ -48,7 +48,7 @@ class ChefClient(object):
     def test_recipe(self, recipe):
         LOG.debug("Sending recipe to %s" % self._ip)
 
-        # connecto to machine
+        # connect to machine
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
