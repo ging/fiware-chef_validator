@@ -32,24 +32,23 @@ CONF.register_opts(opts, group="clients_docker")
 
 class DockerClient(object):
 
-    def __init__(self, url):
-        self._url = url if url is not None else CONF.url
+    def __init__(self, url=CONF.clients_docker.url):
+        self._url = url
         try:
             self.dc = DC(base_url=self._url)
         except Exception as e:
             print e
 
-    def test_recipe(self, recipe, image=None):
-        image = image if image is not None else CONF.image
+    def test_recipe(self, recipe, image=CONF.clients_docker.image):
         LOG.debug("Sending recipe to docker server in %s" % self._url)
 
         # run container
-        try:
-            container = self.dc.create_container(image)
-            self.dc.start(container=container.get('Id'))
-        except Exception as e:
-            LOG.error(_LW("Error creating container %s" % e))
-            raise DockerContainerException(image=image)
+        # try:
+        container = self.dc.create_container(image)
+        self.dc.start(container=container.get('Id'))
+        # except Exception as e:
+        #     LOG.error(_LW("Error creating container %s" % e))
+        #     raise DockerContainerException(image=image)
 
         # install cookbook
         try:
@@ -93,3 +92,6 @@ class DockerClient(object):
             msg = _("Recipe %s successfully deployed" % recipe)
         return msg
 
+if __name__ == '__main__':
+    d = DockerClient()
+    d.test_recipe("git", image="pmverdugo/chef-solo")
