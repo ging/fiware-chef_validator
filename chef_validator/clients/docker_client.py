@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may
 #  not use this file except in compliance with the License. You may obtain
 #  a copy of the License at
@@ -30,7 +31,7 @@ CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_docker")
 
 
-class DockerClient(object):
+class DockerClient:
 
     def __init__(self, url=CONF.clients_docker.url):
         self._url = url
@@ -41,57 +42,109 @@ class DockerClient(object):
 
     def test_recipe(self, recipe, image=CONF.clients_docker.image):
         LOG.debug("Sending recipe to docker server in %s" % self._url)
-
+        b_success = True
+        msg = {}
         # run container
-        # try:
-        container = self.dc.create_container(image)
-        self.dc.start(container=container.get('Id'))
-        # except Exception as e:
-        #     LOG.error(_LW("Error creating container %s" % e))
-        #     raise DockerContainerException(image=image)
+        try:
+            container = self.dc.create_container(image, tty=True, name="%s-validate" % image)
+            self.dc.start(container=container.get('Id'))
+        except Exception as e:
+            LOG.error(_LW("Error creating container %s" % e))
+            raise DockerContainerException(image=image)
 
         # install cookbook
         try:
             cmd_install = "knife cookbook github install cookbooks/%s" % recipe
-            bash_install = "/bin/bash -c \'{}\'".format(cmd_install)
-            exec_install = self.dc.exec_create(container=image, cmd=bash_install)
-            resp_install = self.dc.exec_start(exec_install.get('Id'))
-            print resp_install
+            resp_install = self.execute_command(container, cmd_install)
+            msg['install'] = {
+                'success': True,
+                'response': resp_install
+            }
+            for line in resp_install.splitlines():
+                if "ERROR" in line:
+                    b_success = False
+                    msg['install']['success'] = b_success
         except Exception as e:
+            self.remove_container(container)
             LOG.error(_LW("Chef install exception %s" % e))
             raise CookbookInstallException(recipe=recipe)
 
         # test cookbook syntax
         try:
             cmd_test = "knife cookbook test %s" % recipe
-            bash_test = "/bin/bash -c \'{}\'".format(cmd_test)
-            exec_test = self.dc.exec_create(container=image, cmd=bash_test)
-            resp_test = self.dc.exec_start(exec_test.get('Id'))
-            print resp_test
+            resp_test = self.execute_command(container, cmd_test)
+            msg['test'] = {
+                'success': True,
+                'response': resp_test
+            }
+            for line in resp_test.splitlines():
+                if "ERROR" in line:
+                    b_success = False
+                    msg['test']['success'] = b_success
         except Exception as e:
+            self.remove_container(container)
             LOG.error(_LW("Cookbook syntax exception %s" % e))
             raise CookbookSyntaxException(recipe=recipe)
 
         # launch recipe deployment
         try:
-            cmd_launch = "Chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
-            bash_launch = "/bin/bash -c \'{}\'".format(cmd_launch)
-            exec_launch = self.dc.exec_create(container=image, cmd=bash_launch)
-            resp_launch = self.dc.exec_start(exec_launch.get('Id'))
-            print resp_launch
+            # inject custom solo.json file
+            json_cont = '{"run_list": [ "recipe[%s]"],}' % recipe
+            cmd_inject = 'echo %s >/etc/chef/solo.json' % json_cont
+            self.execute_command(container, cmd_inject)
+            # launch execution
+            cmd_launch = "chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
+            resp_launch = self.execute_command(container, cmd_launch)
+            msg['deploy'] = {
+                'success': True,
+                'response': resp_launch
+            }
+            if resp_launch is None or "FATAL" in resp_launch:
+                b_success = False
+                msg['deploy']['success'] = b_success
         except Exception as e:
+            self.remove_container(container)
             LOG.error(_LW("Recipe deployment exception %s" % e))
             raise RecipeDeploymentException(recipe=recipe)
 
         # check execution output
-        if resp_launch is None or "FATAL" in resp_launch:
-            # better to provide server error messages (500) to the client
-            msg = "Error deploying recipe %s" % recipe
-            LOG.error(_LW(msg))
+        if b_success:
+            msg['result'] = {
+                'success': True,
+                'result': "Recipe %s successfully deployed\n" % recipe
+            }
         else:
-            msg = _("Recipe %s successfully deployed" % recipe)
+            msg['result'] = {
+                'success': False,
+                'result': "Error deploying recipe {}\n".format(recipe)
+            }
+            LOG.error(_LW(msg))
+        self.remove_container(container)
         return msg
 
+    def remove_container(self, container, kill=True):
+        """destroy container on exit
+        :param container: name of the container
+        :param kill: inhibits removal for testing purposes
+        """
+        self.dc.stop(container)
+        if kill:
+            self.dc.remove_container(container)
+
+    def execute_command(self, container, command):
+        """ Execute a command in the given container
+        :param command: the bash command to run
+        :return: the execution result
+        """
+        bash_txt = "/bin/bash -c \'{}\'".format(command)
+        print bash_txt
+        exec_txt = self.dc.exec_create(container=container.get('Id'), cmd=bash_txt)
+        return self.dc.exec_start(exec_txt.get('Id'))
+
 if __name__ == '__main__':
+    import logging
+    LOG = logging.getLogger()
+    logging.basicConfig(level=logging.DEBUG)
     d = DockerClient()
-    d.test_recipe("git", image="pmverdugo/chef-solo")
+    import pprint
+    pprint.pprint(d.test_recipe("patata", image="pmverdugo/chef-solo"))

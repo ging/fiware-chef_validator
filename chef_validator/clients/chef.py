@@ -47,7 +47,7 @@ class ChefClient(object):
 
     def test_recipe(self, recipe):
         LOG.debug("Sending recipe to %s" % self._ip)
-
+        msg = {}
         # connect to machine
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -66,6 +66,14 @@ class ChefClient(object):
                 "knife cookbook github install cookbooks/%s" % recipe
             )
             stdin.flush()
+            msg['install'] = {
+                'success': True,
+                'response': stdout
+            }
+            for line in stdout.splitlines():
+                if "ERROR" in line:
+                    b_success = False
+                    msg['install']['success'] = b_success
         except Exception as e:
             LOG.error(_LW("SSH command send exception %s" % e))
             raise CookbookInstallException(recipe=recipe)
@@ -76,6 +84,14 @@ class ChefClient(object):
                 "knife cookbook test %s" % recipe
             )
             stdin.flush()
+            msg['test'] = {
+                'success': True,
+                'response': stdout
+            }
+            for line in stdout.splitlines():
+                if "ERROR" in line:
+                    b_success = False
+                    msg['test']['success'] = b_success
         except Exception as e:
             LOG.error(_LW("Cookbook syntax exception %s" % e))
             raise CookbookSyntaxException(recipe=recipe)
@@ -86,6 +102,13 @@ class ChefClient(object):
                 "Chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
             )
             stdin.flush()
+            msg['deploy'] = {
+                'success': True,
+                'response': stdout
+            }
+            if stdout is None or "FATAL" in stdout:
+                b_success = False
+                msg['deploy']['success'] = b_success
         except Exception as e:
             LOG.error(_LW("Recipe deployment exception %s" % e))
             raise RecipeDeploymentException(recipe=recipe)

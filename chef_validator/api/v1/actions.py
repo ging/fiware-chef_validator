@@ -48,7 +48,6 @@ class ValidateController(object):
         image = n.get_image_by_name(image)
         if not image:
             raise exception.ImageNotFound
-            # raise exc.HTTPInternalServerError(_("Image not found %s") % image)
 
         machine = "%s-validate" % body['image']
 
@@ -64,7 +63,7 @@ class ValidateController(object):
         # send knife command
         c = ChefClient(ip)
         res = c.test_recipe(recipe)
-        return {"resp": res}
+        return res
 
 
 def create_resource():

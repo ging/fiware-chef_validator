@@ -26,6 +26,7 @@ RUN /opt/chefdk/embedded/bin/gem install knife-github-cookbooks && \
     mkdir /var/chef && \
     mkdir /etc/chef && \
     mkdir /var/chef/cookbooks  && \
+    touch /etc/chef/solo.log && \
     cd /var/chef/cookbooks && \
     git init && \
     git config user.name "demo" && \

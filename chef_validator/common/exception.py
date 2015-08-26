@@ -90,7 +90,7 @@ class CookbookInstallException(OpenstackException):
 
 
 class CookbookSyntaxException(OpenstackException):
-    msg_fmt = _("The provided cookbook syntax is incorrect for %(recipe)s")
+    msg_fmt = _("The provided cookbook syntax is incorrect for recipe: %(recipe)s")
 
 
 class RecipeDeploymentException(OpenstackException):
