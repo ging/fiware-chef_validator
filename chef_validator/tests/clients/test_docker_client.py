@@ -12,22 +12,4 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from oslo_config import cfg
-from oslo_log import log
-import testtools
-import fixtures
-
-CONF = cfg.CONF
-log.register_options(CONF)
-log.setup(CONF, 'chef_validator')
-
-
-class ValidatorTestCase(testtools.TestCase):
-
-    def setUp(self):
-        super(ValidatorTestCase, self).setUp()
-        self.useFixture(fixtures.FakeLogger('chef_validator'))
-
-    def override_config(self, name, override, group=None):
-        CONF.set_override(name, override, group)
-        self.addCleanup(CONF.clear_override, name, group)
+from __future__ import unicode_literals

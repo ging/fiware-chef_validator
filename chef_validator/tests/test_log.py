@@ -16,7 +16,7 @@
 import logging
 import sys
 
-from chef_validator.tests import tb
+from chef_validator.tests import base as tb
 
 
 class SysLogHandlersTestCase(tb.ValidatorTestCase):

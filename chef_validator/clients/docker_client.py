@@ -35,6 +35,7 @@ class DockerClient:
 
     def __init__(self, url=CONF.clients_docker.url):
         self._url = url
+        self.container = None
         try:
             self.dc = DC(base_url=self._url)
         except Exception as e:
@@ -44,68 +45,13 @@ class DockerClient:
         LOG.debug("Sending recipe to docker server in %s" % self._url)
         b_success = True
         msg = {}
-        # run container
-        try:
-            container = self.dc.create_container(image, tty=True, name="%s-validate" % image)
-            self.dc.start(container=container.get('Id'))
-        except Exception as e:
-            LOG.error(_LW("Error creating container %s" % e))
-            raise DockerContainerException(image=image)
-
-        # install cookbook
-        try:
-            cmd_install = "knife cookbook github install cookbooks/%s" % recipe
-            resp_install = self.execute_command(container, cmd_install)
-            msg['install'] = {
-                'success': True,
-                'response': resp_install
-            }
-            for line in resp_install.splitlines():
-                if "ERROR" in line:
-                    b_success = False
-                    msg['install']['success'] = b_success
-        except Exception as e:
-            self.remove_container(container)
-            LOG.error(_LW("Chef install exception %s" % e))
-            raise CookbookInstallException(recipe=recipe)
-
-        # test cookbook syntax
-        try:
-            cmd_test = "knife cookbook test %s" % recipe
-            resp_test = self.execute_command(container, cmd_test)
-            msg['test'] = {
-                'success': True,
-                'response': resp_test
-            }
-            for line in resp_test.splitlines():
-                if "ERROR" in line:
-                    b_success = False
-                    msg['test']['success'] = b_success
-        except Exception as e:
-            self.remove_container(container)
-            LOG.error(_LW("Cookbook syntax exception %s" % e))
-            raise CookbookSyntaxException(recipe=recipe)
-
-        # launch recipe deployment
-        try:
-            # inject custom solo.json file
-            json_cont = '{"run_list": [ "recipe[%s]"],}' % recipe
-            cmd_inject = 'echo %s >/etc/chef/solo.json' % json_cont
-            self.execute_command(container, cmd_inject)
-            # launch execution
-            cmd_launch = "chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
-            resp_launch = self.execute_command(container, cmd_launch)
-            msg['deploy'] = {
-                'success': True,
-                'response': resp_launch
-            }
-            if resp_launch is None or "FATAL" in resp_launch:
-                b_success = False
-                msg['deploy']['success'] = b_success
-        except Exception as e:
-            self.remove_container(container)
-            LOG.error(_LW("Recipe deployment exception %s" % e))
-            raise RecipeDeploymentException(recipe=recipe)
+        self.run_container(image)
+        msg['install'] = self.run_install(recipe)
+        b_success &= msg['install']['success']
+        msg['test'] = self.run_test(recipe)
+        b_success &= msg['test']['success']
+        msg['deploy'] = self.run_deploy(recipe)
+        b_success &= msg['deploy']['success']
 
         # check execution output
         if b_success:
@@ -119,26 +65,101 @@ class DockerClient:
                 'result': "Error deploying recipe {}\n".format(recipe)
             }
             LOG.error(_LW(msg))
-        self.remove_container(container)
+        self.remove_container()
         return msg
 
-    def remove_container(self, container, kill=True):
+    def run_deploy(self, recipe):
+        """ Run recipe deployment
+        :param recipe: recipe to deploy
+        :return msg: dictionary with results and state
+        """
+        try:
+            # inject custom solo.json file
+            json_cont = '{"run_list": [ "recipe[%s]"],}' % recipe
+            cmd_inject = 'echo %s >/etc/chef/solo.json' % json_cont
+            self.execute_command(cmd_inject)
+            # launch execution
+            cmd_launch = "chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
+            resp_launch = self.execute_command(cmd_launch)
+            msg = {
+                'success': True,
+                'response': resp_launch
+            }
+            if resp_launch is None or "FATAL" in resp_launch:
+                msg['success'] = False
+        except Exception as e:
+            self.remove_container(self.container)
+            LOG.error(_LW("Recipe deployment exception %s" % e))
+            raise RecipeDeploymentException(recipe=recipe)
+        return msg
+
+    def run_test(self, recipe):
+        """ Test cookbook syntax
+        :param recipe: recipe to test
+        :return msg: dictionary with results and state
+        """
+        try:
+            cmd_test = "knife cookbook test %s" % recipe
+            resp_test = self.execute_command(cmd_test)
+            msg = {
+                'success': True,
+                'response': resp_test
+            }
+            for line in resp_test.splitlines():
+                if "ERROR" in line:
+                    msg['success'] = False
+        except Exception as e:
+            self.remove_container(self.container)
+            LOG.error(_LW("Cookbook syntax exception %s" % e))
+            raise CookbookSyntaxException(recipe=recipe)
+        return msg
+
+    def run_install(self, recipe):
+        try:
+            cmd_install = "knife cookbook github install cookbooks/%s" % recipe
+            resp_install = self.execute_command(cmd_install)
+            msg = {
+                'success': True,
+                'response': resp_install
+            }
+            for line in resp_install.splitlines():
+                if "ERROR" in line:
+                    msg['success'] = False
+        except Exception as e:
+            self.remove_container(self.container)
+            LOG.error(_LW("Chef install exception %s" % e))
+            raise CookbookInstallException(recipe=recipe)
+        return msg
+
+    def run_container(self, image):
+        """Run and start a container based on the given image
+        :param image: image to run
+        :return:
+        """
+        self.container = None
+        try:
+            self.container = self.dc.create_container(image, tty=True, name="%s-validate" % image)
+            self.dc.start(container=self.container.get('Id'))
+        except Exception as e:
+            LOG.error(_LW("Error creating container %s" % e))
+            raise DockerContainerException(image=image)
+
+    def remove_container(self, kill=True):
         """destroy container on exit
-        :param container: name of the container
         :param kill: inhibits removal for testing purposes
         """
-        self.dc.stop(container)
+        self.dc.stop(self.container)
         if kill:
-            self.dc.remove_container(container)
+            self.dc.remove_container(self.container)
 
-    def execute_command(self, container, command):
+    def execute_command(self, command):
         """ Execute a command in the given container
-        :param command: the bash command to run
-        :return: the execution result
+        :param command:  bash command to run
+        :return:  execution result
         """
         bash_txt = "/bin/bash -c \'{}\'".format(command)
         print bash_txt
-        exec_txt = self.dc.exec_create(container=container.get('Id'), cmd=bash_txt)
+        exec_txt = self.dc.exec_create(container=self.container.get('Id'), cmd=bash_txt)
         return self.dc.exec_start(exec_txt.get('Id'))
 
 if __name__ == '__main__':
