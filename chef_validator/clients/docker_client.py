@@ -11,7 +11,7 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-
+from docker.errors import DockerException
 
 from oslo_log import log as logging
 from oslo_config import cfg
@@ -21,7 +21,7 @@ from chef_validator.common.exception import CookbookSyntaxException, \
     CookbookInstallException, \
     DockerContainerException
 
-from chef_validator.common.i18n import _, _LW
+from chef_validator.common.i18n import _, _LW, _LE
 
 LOG = logging.getLogger(__name__)
 
@@ -43,8 +43,9 @@ class DockerClient(object):
         self.container = None
         try:
             self.dc = DC(base_url=self._url)
-        except Exception as e:
-            print e
+        except DockerException as e:
+            LOG.error(_LE("Docker client error: %s") % e)
+            raise e
 
     def test_recipe(self, recipe, image=CONF.clients_docker.image):
         """
@@ -142,7 +143,7 @@ class DockerClient(object):
                     msg['success'] = False
         except Exception as e:
             self.remove_container(self.container)
-            LOG.error(_LW("Chef install exception %s" % e))
+            LOG.error(_LW("Chef install exception: %s" % e))
             raise CookbookInstallException(recipe=recipe)
         return msg
 
@@ -151,16 +152,16 @@ class DockerClient(object):
         :param image: image to run
         :return:
         """
-        self.container = None
+        contname = "%s-validate" % image
         try:
             self.container = self.dc.create_container(
                 image,
                 tty=True,
-                name="%s-validate" % image
+                name=contname
             )
             self.dc.start(container=self.container.get('Id'))
-        except Exception as e:
-            LOG.error(_LW("Error creating container %s" % e))
+        except AttributeError as e:
+            LOG.error(_LW("Error creating container: %s" % e))
             raise DockerContainerException(image=image)
 
     def remove_container(self, kill=True):
@@ -187,6 +188,6 @@ if __name__ == '__main__':
     import logging
     LOG = logging.getLogger()
     logging.basicConfig(level=logging.DEBUG)
-    d = DockerClient()
+    d = DockerClient("fakeurl")
     import pprint
     pprint.pprint(d.test_recipe("patata", image="pmverdugo/chef-solo"))

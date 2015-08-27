@@ -159,6 +159,7 @@ class ChefClient(object):
         Connect to a session with the internal parameters
         :return:
         """
+        # todo check novaclient get_novnc_console
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:

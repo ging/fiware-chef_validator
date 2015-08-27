@@ -15,7 +15,7 @@ import chef_validator.tests.api.base as tb
 from chef_validator.api.v1 import actions
 
 
-class TestActionsApi(tb.ControllerTest, tb.ValidatorApiTestCase):
+class TestActionsApi(tb.ValidatorApiTestCase):
 
     def setUp(self):
         super(TestActionsApi, self).setUp()

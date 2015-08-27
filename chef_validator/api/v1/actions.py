@@ -13,6 +13,7 @@
 
 from oslo_log import log as logging
 from webob import exc
+from chef_validator.clients.docker_client import DockerClient
 
 from chef_validator.common import wsgi
 from chef_validator.common import exception
@@ -61,8 +62,9 @@ class ValidateController(object):
         ip = n.get_ip()
 
         # send knife command
-        c = ChefClient(ip)
-        res = c.test_recipe(recipe)
+        # c = ChefClient(ip)
+        d = DockerClient()
+        res = d.test_recipe(recipe)
         return res
 
 

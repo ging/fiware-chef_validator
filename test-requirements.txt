@@ -6,7 +6,6 @@
 # Hacking already pins down pep8, pyflakes and flake8
 hacking
 fixtures
-testrepository
 testtools
 nose
 mock

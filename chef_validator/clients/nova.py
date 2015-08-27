@@ -35,8 +35,7 @@ class NovaClient(object):
         self._client.authenticate()
         self._machine = None
 
-    @staticmethod
-    def create_nova_client(context):
+    def create_nova_client(self, context):
         api_version = CONF.clients_nova.api_version
         endpoint_type = CONF.clients_nova.endpoint_type
         nova_endpoint = CONF.clients_nova.endpoint
@@ -56,7 +55,6 @@ class NovaClient(object):
 
     def list(self):
         images = self._client.images.list()
-        print images
         while True:
             try:
                 image = images.next()
@@ -101,7 +99,6 @@ class NovaClient(object):
             # Retrieve the instance again so the status field updates
             instance = self._client.servers.get(self._machine.id)
             status = instance.status
-        print status
 
     def delete_machine(self, name):
         server = self._client.servers.find(name=name)
