@@ -14,10 +14,10 @@
 
 from oslo_log import log as logging
 from oslo_config import cfg
+
 from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, RecipeDeploymentException, \
     CookbookInstallException
-
-from chef_validator.common.i18n import _, _LW
+from chef_validator.common.i18n import _LW
 
 LOG = logging.getLogger(__name__)
 
@@ -44,6 +44,7 @@ class paramiko(object):
 
 class ChefClient(object):
     """ Chef client wrapper"""
+
     def __init__(self, ip, user=CONF.clients_chef.username, passw=CONF.clients_chef.password):
         """
         set internal parameters

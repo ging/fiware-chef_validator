@@ -24,7 +24,6 @@ from chef_validator.common import wsgi
 
 
 class AuthUrlFilter(wsgi.Middleware):
-
     def __init__(self, app, conf):
         super(AuthUrlFilter, self).__init__(app)
         self.conf = conf
@@ -62,4 +61,5 @@ def filter_factory(global_conf, **local_conf):
 
     def auth_url_filter(app):
         return AuthUrlFilter(app, conf)
+
     return auth_url_filter

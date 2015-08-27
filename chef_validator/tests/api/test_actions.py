@@ -16,7 +16,6 @@ from chef_validator.api.v1 import actions
 
 
 class TestActionsApi(tb.ValidatorApiTestCase):
-
     def setUp(self):
         super(TestActionsApi, self).setUp()
         self.controller = actions.ValidateController()

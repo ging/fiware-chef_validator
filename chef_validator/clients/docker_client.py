@@ -12,16 +12,15 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 from docker.errors import DockerException
-
 from oslo_log import log as logging
 from oslo_config import cfg
 from docker import Client as DC
+
 from chef_validator.common.exception import CookbookSyntaxException, \
     RecipeDeploymentException, \
     CookbookInstallException, \
     DockerContainerException
-
-from chef_validator.common.i18n import _, _LW, _LE
+from chef_validator.common.i18n import _LW, _LE
 
 LOG = logging.getLogger(__name__)
 
@@ -184,10 +183,13 @@ class DockerClient(object):
         )
         return self.dc.exec_start(exec_txt.get('Id'))
 
+
 if __name__ == '__main__':
     import logging
+
     LOG = logging.getLogger()
     logging.basicConfig(level=logging.DEBUG)
     d = DockerClient("fakeurl")
     import pprint
+
     pprint.pprint(d.test_recipe("patata", image="pmverdugo/chef-solo"))

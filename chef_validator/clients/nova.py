@@ -13,10 +13,9 @@
 
 from novaclient import client as nc
 from novaclient import exceptions
-from novaclient.exceptions import NotFound
-
 from oslo_log import log as logging
 from oslo_config import cfg
+
 from chef_validator.common.exception import AmbiguousNameException, ImageNotFound
 
 LOG = logging.getLogger(__name__)

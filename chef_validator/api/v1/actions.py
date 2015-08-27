@@ -13,12 +13,11 @@
 
 from oslo_log import log as logging
 from webob import exc
-from chef_validator.clients.docker_client import DockerClient
 
+from chef_validator.clients.docker_client import DockerClient
 from chef_validator.common import wsgi
 from chef_validator.common import exception
 from chef_validator.common.i18n import _LI, _
-from chef_validator.clients.chef import ChefClient
 from chef_validator.clients.nova import NovaClient
 import chef_validator.common.utils
 

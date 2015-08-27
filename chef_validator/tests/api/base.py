@@ -12,9 +12,9 @@
 #  under the License.
 
 import logging
+
 import fixtures
 import mock
-
 from oslo_utils import timeutils
 
 from chef_validator.tests import base
@@ -26,6 +26,7 @@ class FakeLogMixin(object):
     """Allow logs to be tested (rather than just disabling
     logging.
     """
+
     def setup_logging(self):
         # Assign default logs to self.LOG so we can still
         # assert on chef_validator logs.
@@ -66,6 +67,7 @@ class ValidatorApiTestCase(base.ValidatorTestCase, FakeLogMixin):
         class FakeUUID(object):
             def __init__(self, v):
                 self.hex = v
+
         mock_uuid4 = mock.patch('uuid.uuid4').start()
         mock_uuid4.side_effect = [FakeUUID(v) for v in values]
         return mock_uuid4

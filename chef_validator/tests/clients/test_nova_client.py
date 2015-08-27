@@ -12,17 +12,12 @@
 #    under the License.
 """Tests for :module:'chef_validator.engine.clients.os.nova'."""
 
-import uuid
-
 import mock
-from novaclient import client as nc
-from novaclient import exceptions as nova_exceptions
-from oslo_config import cfg
-import six
 
-from chef_validator.common import exception, context
+from chef_validator.common import context
 from chef_validator.clients.nova import NovaClient
 from chef_validator.tests.base import ValidatorTestCase
+
 
 def dummy_context(user='test_username', tenant_id='test_tenant_id',
                   password='password', roles=None, user_id=None,
@@ -42,9 +37,9 @@ def dummy_context(user='test_username', tenant_id='test_tenant_id',
         'region_name': region_name
     })
 
+
 class NovaClientTestCase(ValidatorTestCase):
     def setUp(self):
         super(NovaClientTestCase, self).setUp()
         self.client = NovaClient(dummy_context())
         self.client._client = mock.MagicMock()
-

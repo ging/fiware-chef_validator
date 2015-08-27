@@ -155,7 +155,7 @@ class RequestContext(context.RequestContext):
             )
         LOG.error(
             _LE("Keystone v3 API connection failed, no password "
-            "trust or auth_token!")
+                "trust or auth_token!")
         )
         raise exception.AuthorizationFailure()
 
@@ -172,7 +172,6 @@ def get_admin_context(show_deleted=False):
 
 
 class ContextMiddleware(wsgi.Middleware):
-
     def __init__(self, app, conf, **local_conf):
         # Determine the context class to use
         self.ctxcls = RequestContext
@@ -259,4 +258,5 @@ def request_context(func):
             return func(self, ctx, *args, **kwargs)
         except exception.OpenstackException:
             raise oslo_messaging.rpc.dispatcher.ExpectedException()
+
     return wrapped

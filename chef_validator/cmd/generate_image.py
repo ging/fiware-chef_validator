@@ -18,9 +18,11 @@ import logging
 import gc as collector
 import os
 import subprocess
+
 from docker import Client as DockerClient
 from glanceclient.v2 import client as GlanceClient
 from oslo_config import cfg
+
 from chef_validator.common.credentials import get_glance_connection
 
 CONF = cfg.CONF
@@ -47,11 +49,11 @@ def cmdline_upload():
     # only admin can upload images from commandline
     os.environ.update({'OS_USERNAME': 'admin'})
     cmd = "docker save {name} | " \
-        "glance image-create " \
-        "--is-public=True " \
-        "--container-format=docker " \
-        "--disk-format=raw " \
-        "--name {name}".format(name=CONF.tag)
+          "glance image-create " \
+          "--is-public=True " \
+          "--container-format=docker " \
+          "--disk-format=raw " \
+          "--name {name}".format(name=CONF.tag)
     logging.info("Executing %s" % cmd)
     subprocess.call([cmd], shell=True)
 
@@ -100,6 +102,7 @@ def main():
     """
     dock_image()
     upload_to_glance()
+
 
 if __name__ == '__main__':
     main()

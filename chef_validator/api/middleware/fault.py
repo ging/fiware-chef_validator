@@ -16,21 +16,18 @@ Inspired by Cinder's faultwrapper
 """
 from __future__ import unicode_literals
 
-import six
-
 import traceback
 
+import six
 from oslo_config import cfg
 import webob
 
 from chef_validator.common import exception
-
 from chef_validator.common import wsgi
 from chef_validator.common.utils import JSONSerializer
 
 
 class Fault(object):
-
     def __init__(self, error):
         self.error = error
 

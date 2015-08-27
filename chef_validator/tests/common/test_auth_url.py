@@ -19,7 +19,6 @@ import webob
 from webob import exc
 
 from chef_validator.common import auth_url
-from chef_validator.tests import common
 from chef_validator.tests.base import ValidatorTestCase
 
 
@@ -34,7 +33,6 @@ class FakeApp(object):
 
 
 class AuthUrlFilterTest(ValidatorTestCase):
-
     def setUp(self):
         super(AuthUrlFilterTest, self).setUp()
         self.app = FakeApp()
@@ -74,7 +72,6 @@ class AuthUrlFilterTest(ValidatorTestCase):
         self.middleware(req)
         self.assertIn('X-Auth-Url', req.headers)
         self.assertEqual('foobar', req.headers['X-Auth-Url'])
-
 
     def test_validate_auth_url_with_missing_url(self):
         self.assertRaises(exc.HTTPBadRequest,

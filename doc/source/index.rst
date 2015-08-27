@@ -17,16 +17,16 @@ Welcome to Chef Validator's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+:maxdepth: 2
 
 .. include:: ../../README.rst
 
 Code Documentation
 ==================
 .. toctree::
-   :maxdepth: 1
+:maxdepth: 1
 
-   api/autoindex
+       api/autoindex
 
 Indices and tables
 ==================

@@ -1,3 +1,5 @@
 {
-"run_list": [ "recipe[recipe]"],
+  "run_list": [
+    "recipe[recipe]"
+  ],
 }

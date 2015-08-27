@@ -82,7 +82,7 @@ class Service(service.Service):
             raise RuntimeError(_(
                 "Could not bind to %(host)s:%(port)s "
                 "after trying for 30 seconds") %
-                {'host': host, 'port': port})
+                               {'host': host, 'port': port})
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # sockets can hang around forever without keepalive
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)

@@ -13,11 +13,11 @@
 #  under the License.
 """ Docker client tests"""
 from __future__ import unicode_literals
+
 import docker
 from docker.errors import DockerException
 from oslo_utils.tests.test_excutils import mox
-from testtools import ExpectedException
-import testtools
+
 from chef_validator.common.exception import DockerContainerException
 import chef_validator.tests.base as tb
 from chef_validator.clients.docker_client import DockerClient

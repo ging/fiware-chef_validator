@@ -15,14 +15,8 @@
 #    under the License.
 
 
-import socket
-
-import fixtures
-import mock
-import six
 import stubout
 import webob
-from oslo_config import cfg
 
 from chef_validator.common import exception
 from chef_validator.common import wsgi
@@ -31,7 +25,6 @@ from chef_validator.tests.base import ValidatorTestCase
 
 
 class RequestTest(ValidatorTestCase):
-
     def setUp(self):
         self.stubs = stubout.StubOutForTesting()
         super(RequestTest, self).setUp()
@@ -81,7 +74,6 @@ class RequestTest(ValidatorTestCase):
 
 
 class ResourceTest(ValidatorTestCase):
-
     def setUp(self):
         self.stubs = stubout.StubOutForTesting()
         super(ResourceTest, self).setUp()
@@ -154,57 +146,3 @@ class ResourceTest(ValidatorTestCase):
         resource = wsgi.Resource(None, None, None)
         self.assertRaises(AttributeError, resource.dispatch, Controller(),
                           'index', 'on', pants='off')
-
-    def test_resource_call_error_handle(self):
-        class Controller(object):
-            def delete(self, req, identity):
-                return (req, identity)
-
-        actions = {'action': 'delete', 'id': 12}
-        env = {'wsgiorg.routing_args': [None, actions]}
-        request = wsgi.Request.blank('/tests/123', environ=env)
-        resource = wsgi.Resource(Controller(),
-                                 JSONDeserializer(),
-                                 None)
-        # The Resource does not throw webob.HTTPExceptions, since they
-        # would be considered responses by wsgi and the request flow would end,
-        # instead they are wrapped so they can reach the fault application
-        # where they are converted to a nice JSON/XML response
-        # self.assertRaises(webob.exc.HTTPBadRequest,
-        #                       resource, request)
-        #self.assertIsInstance(e.exc, webob.exc.HTTPBadRequest)
-
-    def test_resource_call_error_handle_localized(self):
-        class Controller(object):
-            def delete(self, req, identity):
-                return (req, identity)
-
-        actions = {'action': 'delete', 'id': 12}
-        env = {'wsgiorg.routing_args': [None, actions]}
-        request = wsgi.Request.blank('/tests/123', environ=env)
-        message_es = "No Encontrado"
-        translated_ex = webob.exc.HTTPBadRequest(message_es)
-
-        resource = wsgi.Resource(Controller(),
-                                 JSONDeserializer(),
-                                 None)
-
-        # e = self.assertRaises(exception.HTTPExceptionDisguise,
-        #                       resource, request)
-        # self.assertEqual(message_es, six.text_type(e.exc))
-        # self.m.VerifyAll()
-
-
-class ResourceExceptionHandlingTest(ValidatorTestCase):
-    scenarios = [
-        ('webob_bad_request', dict(
-            exception=webob.exc.HTTPBadRequest,
-            exception_catch=exception.HTTPExceptionDisguise)),
-        ('webob_not_found', dict(
-            exception=webob.exc.HTTPNotFound,
-            exception_catch=exception.HTTPExceptionDisguise)),
-    ]
-
-
-
-

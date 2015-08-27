@@ -31,6 +31,7 @@ class SSLMiddleware(wsgi.Middleware):
     secure_proxy_ssl_header if exists in the incoming request.
     This is useful if the server is behind a SSL termination proxy.
     """
+
     def __init__(self, application):
         super(SSLMiddleware, self).__init__(application)
         self.secure_proxy_ssl_header = 'HTTP_{0}'.format(

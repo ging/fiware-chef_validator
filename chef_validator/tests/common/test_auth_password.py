@@ -33,7 +33,6 @@ EXPECTED_ENV_RESPONSE = {
     'HTTP_X_AUTH_TOKEN': 'lalalalalala',
 }
 
-
 TOKEN_V2_RESPONSE = {
     'token': {
         'id': 'lalalalalala',
@@ -53,7 +52,6 @@ TOKEN_V2_RESPONSE = {
     },
     'serviceCatalog': {}
 }
-
 
 TOKEN_V3_RESPONSE = {
     'version': 'v3',
@@ -100,7 +98,6 @@ class FakeApp(object):
 
 
 class KeystonePasswordAuthProtocolTest(ValidatorTestCase):
-
     def setUp(self):
         super(KeystonePasswordAuthProtocolTest, self).setUp()
         self.config = {'auth_uri': 'http://keystone.test.com:5000'}

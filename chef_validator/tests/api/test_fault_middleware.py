@@ -121,11 +121,11 @@ class FaultMiddlewareTest(ValidatorTestCase):
         expected_message, expected_traceback = six.text_type(
             remote_error).split('\n', 1)
         expected = {u'code': 500,
- u'error': {u'message': u'Invalid content type %(content_type)s',
-            u'traceback': u'InvalidContentType: Invalid content type a\n',
-            u'type': 'InvalidContentType'},
- u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
- u'title': 'Internal Server Error'}
+                    u'error': {u'message': u'Invalid content type %(content_type)s',
+                               u'traceback': u'InvalidContentType: Invalid content type a\n',
+                               u'type': 'InvalidContentType'},
+                    u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
+                    u'title': 'Internal Server Error'}
         self.assertEqual(expected, msg)
 
     def remote_exception_helper(self, name, error):

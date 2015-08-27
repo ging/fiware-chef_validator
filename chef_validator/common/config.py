@@ -20,11 +20,10 @@ from __future__ import unicode_literals
 import os
 
 from eventlet.green import socket
-
 from oslo_config import cfg
 from oslo_log import log as logging
-from chef_validator.common import wsgi
 
+from chef_validator.common import wsgi
 from chef_validator.common.i18n import _
 from chef_validator import version
 
@@ -139,6 +138,6 @@ def load_paste_app(app_name=None):
     except (LookupError, ImportError) as e:
         msg = _("Unable to load %(app_name)s from configuration file "
                 "%(conf_file)s. \nGot: %(e)r") % \
-            {'conf_file': conf_file, 'app_name': app_name, 'e': e}
+              {'conf_file': conf_file, 'app_name': app_name, 'e': e}
         LOG.error(msg)
         raise RuntimeError(msg)

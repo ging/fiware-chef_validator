@@ -21,6 +21,7 @@ from eventlet.green import urllib2
 from oslo_log import log as logging
 from oslo_config import cfg
 
+
 # simple local logging
 LOG = logging.getLogger(__name__)
 logging.register_options(cfg.CONF)
@@ -53,7 +54,7 @@ def client():
     # sample request data
     postdata = {
         "recipe": CONF.recipe,
-        "image": 'cirros-0.3.4-x86_64-uec' # CONF.image
+        "image": 'cirros-0.3.4-x86_64-uec'  # CONF.image
     }
 
     # sends the request
@@ -68,6 +69,7 @@ def client():
     except urllib2.HTTPError as e:
         data = e.read()
     pprint.pprint(json.loads(data))
+
 
 if __name__ == '__main__':
     client()

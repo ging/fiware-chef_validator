@@ -19,14 +19,15 @@ Chef Validator API Server. An OpenStack ReST API to Validate Chef Recipes.
 from __future__ import unicode_literals
 import os
 import sys
-import six
 
+import six
 import oslo_i18n as i18n
 from oslo_log import log as logging
 
 from chef_validator.common.i18n import _LI
 from chef_validator.common import config
 from chef_validator.common import wsgi
+
 
 # If ../chef_validator/__init__.py exists, add ../ to Python search path,
 # so that it will override what happens to be installed in
