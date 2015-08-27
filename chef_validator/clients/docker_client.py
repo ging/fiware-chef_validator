@@ -16,8 +16,10 @@
 from oslo_log import log as logging
 from oslo_config import cfg
 from docker import Client as DC
-from chef_validator.common.exception import CookbookSyntaxException, RecipeDeploymentException, \
-    CookbookInstallException, DockerContainerException
+from chef_validator.common.exception import CookbookSyntaxException, \
+    RecipeDeploymentException, \
+    CookbookInstallException, \
+    DockerContainerException
 
 from chef_validator.common.i18n import _, _LW
 
@@ -31,7 +33,10 @@ CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_docker")
 
 
-class DockerClient:
+class DockerClient(object):
+    """
+    Wrapper for Docker client
+    """
 
     def __init__(self, url=CONF.clients_docker.url):
         self._url = url
@@ -42,6 +47,12 @@ class DockerClient:
             print e
 
     def test_recipe(self, recipe, image=CONF.clients_docker.image):
+        """
+        Try to process a recipe and return results
+        :param recipe: recipe to deploy
+        :param image: image to deploy to
+        :return: dictionary with results
+        """
         LOG.debug("Sending recipe to docker server in %s" % self._url)
         b_success = True
         msg = {}
@@ -76,10 +87,10 @@ class DockerClient:
         try:
             # inject custom solo.json file
             json_cont = '{"run_list": [ "recipe[%s]"],}' % recipe
-            cmd_inject = 'echo %s >/etc/chef/solo.json' % json_cont
+            cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution
-            cmd_launch = "chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json"
+            cmd_launch = CONF.clients_chef.cmd_launch
             resp_launch = self.execute_command(cmd_launch)
             msg = {
                 'success': True,
@@ -99,7 +110,7 @@ class DockerClient:
         :return msg: dictionary with results and state
         """
         try:
-            cmd_test = "knife cookbook test %s" % recipe
+            cmd_test = CONF.clients_chef.cmd_test.format(recipe)
             resp_test = self.execute_command(cmd_test)
             msg = {
                 'success': True,
@@ -115,8 +126,12 @@ class DockerClient:
         return msg
 
     def run_install(self, recipe):
+        """Run download and install command
+        :param recipe: recipe to process
+        :return msg: operation result
+        """
         try:
-            cmd_install = "knife cookbook github install cookbooks/%s" % recipe
+            cmd_install = CONF.clients_chef.cmd_install.format(recipe)
             resp_install = self.execute_command(cmd_install)
             msg = {
                 'success': True,
@@ -138,7 +153,11 @@ class DockerClient:
         """
         self.container = None
         try:
-            self.container = self.dc.create_container(image, tty=True, name="%s-validate" % image)
+            self.container = self.dc.create_container(
+                image,
+                tty=True,
+                name="%s-validate" % image
+            )
             self.dc.start(container=self.container.get('Id'))
         except Exception as e:
             LOG.error(_LW("Error creating container %s" % e))
@@ -158,8 +177,10 @@ class DockerClient:
         :return:  execution result
         """
         bash_txt = "/bin/bash -c \'{}\'".format(command)
-        print bash_txt
-        exec_txt = self.dc.exec_create(container=self.container.get('Id'), cmd=bash_txt)
+        exec_txt = self.dc.exec_create(
+            container=self.container.get('Id'),
+            cmd=bash_txt
+        )
         return self.dc.exec_start(exec_txt.get('Id'))
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +13,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Base Logging Tests """
 
 import logging
 import sys
@@ -23,6 +25,7 @@ class SysLogHandlersTestCase(tb.ValidatorTestCase):
     """Test for standard and RFC compliant Syslog handlers."""
 
     def setUp(self):
+        """ Configure logger"""
         super(SysLogHandlersTestCase, self).setUp()
         if sys.platform != 'linux2':
             self.skip("SKIP: This test work on Linux platform only.")
