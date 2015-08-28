@@ -54,12 +54,13 @@ class NovaClient(object):
 
     def list(self):
         images = self._client.images.list()
-        while True:
-            try:
-                image = images.next()
-                yield self._format(image)
-            except StopIteration:
-                break
+        # while True:
+        #     try:
+        #         image = images.next()
+        #         yield self._format(image)
+        #     except StopIteration:
+        #         break
+        return [self._format(i) for i in images]
 
     @staticmethod
     def _format(image):
@@ -96,8 +97,7 @@ class NovaClient(object):
         while status == 'BUILD':
             time.sleep(5)
             # Retrieve the instance again so the status field updates
-            instance = self._client.servers.get(self._machine.id)
-            status = instance.status
+            status = self._client.servers.get(self._machine.id).status
 
     def delete_machine(self, name):
         server = self._client.servers.find(name=name)
@@ -105,4 +105,4 @@ class NovaClient(object):
 
     def get_ip(self):
         """Return the server's IP"""
-        return self._client.servers.ips(self._machine)['private'][0]['addr']
+        return self._client.servers.ips(self._machine)['public'][0]['addr']

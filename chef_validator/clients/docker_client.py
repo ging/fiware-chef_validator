@@ -46,7 +46,7 @@ class DockerClient(object):
             LOG.error(_LE("Docker client error: %s") % e)
             raise e
 
-    def test_recipe(self, recipe, image=CONF.clients_docker.image):
+    def recipe_deployment_test(self, recipe, image=CONF.clients_docker.image):
         """
         Try to process a recipe and return results
         :param recipe: recipe to deploy
@@ -157,8 +157,8 @@ class DockerClient(object):
                 image,
                 tty=True,
                 name=contname
-            )
-            self.dc.start(container=self.container.get('Id'))
+            ).get('Id')
+            self.dc.start(container=self.container)
         except AttributeError as e:
             LOG.error(_LW("Error creating container: %s" % e))
             raise DockerContainerException(image=image)
@@ -178,10 +178,10 @@ class DockerClient(object):
         """
         bash_txt = "/bin/bash -c \'{}\'".format(command)
         exec_txt = self.dc.exec_create(
-            container=self.container.get('Id'),
+            container=self.container,
             cmd=bash_txt
         )
-        return self.dc.exec_start(exec_txt.get('Id'))
+        return self.dc.exec_start(exec_txt)
 
 
 if __name__ == '__main__':
@@ -192,4 +192,4 @@ if __name__ == '__main__':
     d = DockerClient("fakeurl")
     import pprint
 
-    pprint.pprint(d.test_recipe("patata", image="pmverdugo/chef-solo"))
+    pprint.pprint(d.recipe_deployment_test("patata", image="pmverdugo/chef-solo"))

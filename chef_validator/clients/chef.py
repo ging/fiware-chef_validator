@@ -33,14 +33,12 @@ CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_chef")
 
 
-# todo mockup for pycrypto dependencies on win
-class paramiko(object):
-    def SSHClient(self):
-        return self
-
-    def AutoAddPolicy(self):
+# todo stub for pycrypto dependencies on win
+class SSHClient(object):
+    def set_missing_host_key_policy(self, dummy):
         pass
-
+class AutoAddPolicy(object):
+    pass
 
 class ChefClient(object):
     """ Chef client wrapper"""
@@ -57,7 +55,7 @@ class ChefClient(object):
         self._password = passw
         self.ssh = None
 
-    def test_recipe(self, recipe):
+    def recipe_deploy_test(self, recipe):
         """ Try to deploy the given recipe through an ssh connection
         :param recipe: recipe to deploy
         :return: dict message with results
@@ -161,8 +159,8 @@ class ChefClient(object):
         :return:
         """
         # todo check novaclient get_novnc_console
-        self.ssh = paramiko.SSHClient()
-        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh = SSHClient()
+        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
         try:
             self.ssh.connect(
                 self._ip,

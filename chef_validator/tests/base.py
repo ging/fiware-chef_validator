@@ -29,7 +29,7 @@ class ValidatorTestCase(testtools.TestCase):
     def setUp(self):
         """ setup logger fixture"""
         super(ValidatorTestCase, self).setUp()
-        self.useFixture(fixtures.FakeLogger('chef_validator'))
+        #self.useFixture(fixtures.FakeLogger())
         self.useFixture(fixtures.WarningsCapture())
         self.m = mox.Mox()
         self.addCleanup(self.m.UnsetStubs)

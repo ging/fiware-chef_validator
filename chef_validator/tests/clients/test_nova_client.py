@@ -40,6 +40,70 @@ def dummy_context(user='test_username', tenant_id='test_tenant_id',
 
 class NovaClientTestCase(ValidatorTestCase):
     def setUp(self):
+        """ Setup Environment"""
         super(NovaClientTestCase, self).setUp()
+        NovaClient.create_nova_client = mock.MagicMock()
         self.client = NovaClient(dummy_context())
         self.client._client = mock.MagicMock()
+
+    def test_list(self):
+        """ Test list function"""
+        dummy_image = mock.MagicMock()
+        dummy_image.id = "myid"
+        dummy_image.name = "myname"
+        exp = [{'id': 'myid', 'name': 'myname'}]
+        self.client._client.images.list.return_value = [dummy_image]
+        self.assertEqual(exp,self.client.list())
+
+    def test_get_image_by_name(self):
+        """Test get_image_by_name function"""
+        dummy_image = mock.MagicMock()
+        dummy_image.id = "myid"
+        dummy_image.name = "myname"
+        exp = {'id': 'myid', 'name': 'myname'}
+        self.client._client.images.list.return_value = [dummy_image]
+        self.assertEqual(exp,self.client.get_image_by_name("myname"))
+
+    def test_get_ip(self):
+        """Test get_ip function"""
+        addresses = {
+            'public': [{'version': 4,
+                        'addr': '4.5.6.7'},
+                       {'version': 6,
+                        'addr': '2401:1801:7800:0101:c058:dd33:ff18:04e6'}],
+            'private': [{'version': 4,
+                         'addr': '10.13.12.13'}]}
+
+        expected = '4.5.6.7'
+        self.client._client.servers.ips.return_value = addresses
+        observed = self.client.get_ip()
+        self.assertEqual(expected, observed)
+
+    def test_get_machine(self):
+        """Test get_machine function"""
+        self.client._client.servers.find(name="mymachine").return_value = True
+        expected = True
+        observed = self.client.get_machine("mymachine")
+        self.assertEqual(expected, observed)
+
+    def test_deploy_machine(self):
+        """ Test deploy_machine function"""
+        machine = mock.MagicMock()
+        self.client._client.servers.create.return_value = machine
+        expected = machine
+        self.client.deploy_machine("mymachine", "myimage")
+        observed = self.client._machine
+        self.assertEqual(expected, observed)
+
+    def test_delete_machine(self):
+        """ Test delete_machine function"""
+        machine = mock.MagicMock()
+        self.client._client.servers.find.return_value = machine
+        self.client.delete_machine("mymachine")
+        machine.delete.assert_called_once_with()
+
+    def tearDown(self):
+        """ Cleanup environment"""
+        super(NovaClientTestCase, self).tearDown()
+        self.m.UnsetStubs()
+        self.m.ResetAll()

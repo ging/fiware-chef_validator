@@ -63,7 +63,7 @@ class ValidateController(object):
         # send knife command
         # c = ChefClient(ip)
         d = DockerClient()
-        res = d.test_recipe(recipe)
+        res = d.recipe_deployment_test(recipe)
         return res
 
 

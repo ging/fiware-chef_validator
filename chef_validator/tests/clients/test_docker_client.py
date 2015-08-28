@@ -14,13 +14,16 @@
 """ Docker client tests"""
 from __future__ import unicode_literals
 
+import mock
 import docker
 from docker.errors import DockerException
-from oslo_utils.tests.test_excutils import mox
-
+from oslo_config import cfg
 from chef_validator.common.exception import DockerContainerException
 import chef_validator.tests.base as tb
 from chef_validator.clients.docker_client import DockerClient
+
+CONF = cfg.CONF
+CONF.import_group('clients_chef', 'chef_validator.clients.chef')
 
 
 class DockerClientTestCase(tb.ValidatorTestCase):
@@ -30,7 +33,10 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         """ Create a docker client"""
         super(DockerClientTestCase, self).setUp()
         self.client = DockerClient()
-        self.mox = mox.Mox()
+        CONF.set_override('cmd_test', "cmdtest {}", group='clients_chef')
+        CONF.set_override('cmd_install', "cmdinstall {}", group='clients_chef')
+        CONF.set_override('cmd_inject', "cmdinject {}", group='clients_chef')
+        CONF.set_override('cmd_launch', "cmdlaunch {}", group='clients_chef')
 
     def test_create_client(self):
         """ Test client creation"""
@@ -40,25 +46,64 @@ class DockerClientTestCase(tb.ValidatorTestCase):
     def test_run_container(self):
         """ Test container deployment"""
         self.assertRaises(DockerContainerException, self.client.run_container, "fakeimage")
-        # self.client.dc = self.mox.CreateMockAnything()
-        # self.client.dc.create_container('validimage', name='validimage-validate', tty=True)
-        # self.client.container = self.mox.CreateMockAnything()
-        # self.client.dc.start(container=self.client.container.get('Id'))
-        # self.mox.ReplayAll()
-        # self.client.run_container("validimage")
-        # self.mox.VerifyAll()
+        self.client.dc = mock.MagicMock()
+        self.client.run_container('validimage')
+        self.client.dc.create_container.assert_called_once_with('validimage', name=u'validimage-validate', tty=True)
+        self.client.dc.start.assert_called_once_with(container=self.client.container)
 
     def test_stop_container(self):
         """ Test stopping and removing a container"""
-        self.client.dc = self.mox.CreateMockAnything()
+        self.client.dc = self.m.CreateMockAnything()
         self.client.dc.stop(self.client.container)
         self.client.dc.remove_container(self.client.container)
-        self.mox.ReplayAll()
+        self.m.ReplayAll()
         self.client.remove_container()
-        self.mox.VerifyAll()
+        self.m.VerifyAll()
+
+    def test_run_deploy(self):
+        self.client.execute_command = self.m.CreateMockAnything()
+        self.client.container = "1234"
+        self.client.execute_command('cmdinject {"run_list": [ "recipe[fakerecipe]"],}').AndReturn("Alls good")
+        self.client.execute_command('cmdlaunch {}').AndReturn("Alls good")
+        self.m.ReplayAll()
+        obs = self.client.run_deploy("fakerecipe")
+        expected = "{'response': u'Alls good', 'success': True}"
+        self.assertEqual(expected, str(obs))
+        self.m.VerifyAll()
+
+    def test_run_install(self):
+        self.client.execute_command = self.m.CreateMockAnything()
+        self.client.container = "1234"
+        self.client.execute_command('cmdinstall fakerecipe').AndReturn("Alls good")
+        self.m.ReplayAll()
+        obs = self.client.run_install("fakerecipe")
+        expected = "{'response': u'Alls good', 'success': True}"
+        self.assertEqual(expected, str(obs))
+        self.m.VerifyAll()
+
+    def test_run_test(self):
+        self.client.execute_command = self.m.CreateMockAnything()
+        self.client.container = "1234"
+        self.client.execute_command('cmdtest fakerecipe').AndReturn("Alls good")
+        self.m.ReplayAll()
+        obs = self.client.run_test("fakerecipe")
+        expected = "{'response': u'Alls good', 'success': True}"
+        self.assertEqual(expected, str(obs))
+        self.m.VerifyAll()
+
+    def test_execute_command(self):
+        """Test a command execution in container"""
+        self.client.dc = self.m.CreateMockAnything()
+        self.client.container = "1234"
+        self.client.dc.exec_create(cmd="/bin/bash -c 'mycommand'", container=u'1234').AndReturn("validcmd")
+        self.client.dc.exec_start("validcmd").AndReturn("OK")
+        self.m.ReplayAll()
+        obs = self.client.execute_command("mycommand")
+        self.assertEqual("OK",obs)
+        self.m.VerifyAll()
 
     def tearDown(self):
         """ Cleanup environment"""
         super(DockerClientTestCase, self).tearDown()
-        self.mox.UnsetStubs()
-        self.mox.ResetAll()
+        self.m.UnsetStubs()
+        self.m.ResetAll()
