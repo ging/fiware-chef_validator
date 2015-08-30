@@ -106,3 +106,7 @@ class NovaClient(object):
     def get_ip(self):
         """Return the server's IP"""
         return self._client.servers.ips(self._machine)['public'][0]['addr']
+
+    def get_serial(self):
+        "return a serial console url"
+        return self._machine.get_serial_console('serial')

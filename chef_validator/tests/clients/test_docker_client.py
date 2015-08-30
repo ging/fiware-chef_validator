@@ -23,7 +23,7 @@ import chef_validator.tests.base as tb
 from chef_validator.clients.docker_client import DockerClient
 
 CONF = cfg.CONF
-CONF.import_group('clients_chef', 'chef_validator.clients.chef')
+CONF.import_group('clients_chef', 'chef_validator.clients.chef_client_ssh')
 
 
 class DockerClientTestCase(tb.ValidatorTestCase):

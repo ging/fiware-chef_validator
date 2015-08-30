@@ -15,7 +15,7 @@
 import mock
 
 from chef_validator.common import context
-from chef_validator.clients.nova import NovaClient
+from chef_validator.clients.nova_client import NovaClient
 from chef_validator.tests.base import ValidatorTestCase
 
 

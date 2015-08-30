@@ -16,12 +16,12 @@ from __future__ import unicode_literals
 
 import mock
 from oslo_config import cfg
-from chef_validator.clients.chef import ChefClient
+from chef_validator.clients.chef_client_ssh import ChefClientSSH
 from chef_validator.common.exception import SshConnectException
 import chef_validator.tests.base as tb
 
 CONF = cfg.CONF
-CONF.import_group('clients_chef', 'chef_validator.clients.chef')
+CONF.import_group('clients_chef', 'chef_validator.clients.chef_client_ssh')
 
 
 class ChefClientTestCase(tb.ValidatorTestCase):
@@ -30,7 +30,7 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     def setUp(self):
         """ Create a chef client"""
         super(ChefClientTestCase, self).setUp()
-        self.client = ChefClient("1.1.1.1")
+        self.client = ChefClientSSH("1.1.1.1")
         CONF.set_override('cmd_test', "cmdtest {}", group='clients_chef')
         CONF.set_override('cmd_install', "cmdinstall {}", group='clients_chef')
         CONF.set_override('cmd_inject', "cmdinject {}", group='clients_chef')

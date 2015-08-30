@@ -84,6 +84,8 @@ class AmbiguousNameException(OpenstackException):
 class SshConnectException(OpenstackException):
     msg_fmt = _("The SSH connection to %(host)s could not be stablished.")
 
+class SerialConnectException(OpenstackException):
+    msg_fmt = _("The Serial connection to %(host)s could not be stablished.")
 
 class CookbookInstallException(OpenstackException):
     msg_fmt = _("Error installing cookbook %(recipe)s")

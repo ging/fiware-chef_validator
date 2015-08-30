@@ -10,20 +10,18 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-
+from eventlet import websocket
 
 from oslo_log import log as logging
 from oslo_config import cfg
 
 from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, RecipeDeploymentException, \
-    CookbookInstallException
+    CookbookInstallException, SerialConnectException
 from chef_validator.common.i18n import _LW
 
 LOG = logging.getLogger(__name__)
 
 opts = [
-    cfg.StrOpt('username'),
-    cfg.StrOpt('password'),
     cfg.StrOpt('cmd_install'),
     cfg.StrOpt('cmd_inject'),
     cfg.StrOpt('cmd_test'),
@@ -33,34 +31,23 @@ CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_chef")
 
 
-# todo stub for pycrypto dependencies on win
-class SSHClient(object):
-    def set_missing_host_key_policy(self, dummy):
-        pass
-class AutoAddPolicy(object):
-    pass
-
-class ChefClient(object):
+class ChefClientSerial(object):
     """ Chef client wrapper"""
 
-    def __init__(self, ip, user=CONF.clients_chef.username, passw=CONF.clients_chef.password):
+    def __init__(self, sercon):
         """
         set internal parameters
-        :param ip: remote machine ip
-        :param user: remote machine user account name
-        :param passw: remote machine user account password
+        :param sercon: serial connection url as given by novaclient
         """
-        self._ip = ip
-        self._username = user
-        self._password = passw
-        self.ssh = None
+        self._sercon = sercon
+        self.serial = None
 
     def recipe_deploy_test(self, recipe):
-        """ Try to deploy the given recipe through an ssh connection
+        """ Try to deploy the given recipe through an serial connection
         :param recipe: recipe to deploy
         :return: dict message with results
         """
-        LOG.debug("Sending recipe to %s" % self._ip)
+        LOG.debug("Sending recipe to %s" % self._sercon)
         b_success = True
         msg = {}
         self.connect_session()
@@ -158,29 +145,23 @@ class ChefClient(object):
         Connect to a session with the internal parameters
         :return:
         """
-        # todo check novaclient get_novnc_console
-        self.ssh = SSHClient()
-        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
         try:
-            self.ssh.connect(
-                self._ip,
-                username=self._username,
-                password=self._password
-            )
+            self.serial = websocket.create_connection(
+                self._sercon,
+                subprotocols=['binary', 'base64'])()
         except Exception as e:
-            LOG.error(_LW("SSH connect exception %s" % e))
-            raise SshConnectException(host=self._ip)
+            LOG.error(_LW("Serial connect exception %s" % e))
+            raise SerialConnectException(host=self._sercon)
 
     def disconnect_session(self):
         """close session on exit
         """
-        self.ssh.disconnect()
+        self.serial.disconnect()
 
     def execute_command(self, command):
         """ Execute a command in the given container
         :param command:  bash command to run
         :return:  execution result
         """
-        stdin, stdout, stderr = self.ssh.exec_command(command)
-        stdin.flush()
+        stdout = self.serial.snd(command).rcv()
         return stdout

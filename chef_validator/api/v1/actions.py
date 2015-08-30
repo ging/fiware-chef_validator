@@ -12,16 +12,18 @@
 #  under the License.
 
 from oslo_log import log as logging
+from oslo_config import cfg
 from webob import exc
 
-from chef_validator.clients.docker_client import DockerClient
 from chef_validator.common import wsgi
-from chef_validator.common import exception
+
 from chef_validator.common.i18n import _LI, _
-from chef_validator.clients.nova import NovaClient
+
 import chef_validator.common.utils
+from chef_validator.engine.validate import ValidateEngine
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class ValidateController(object):
@@ -32,6 +34,11 @@ class ValidateController(object):
 
     @staticmethod
     def validate(request, body):
+        """ Validate the given recipe
+        :param request: request context
+        :param body: a json with deployment parameters
+        :return : a json file with process results
+        """
         body = body or {}
         if len(body) < 1:
             raise exc.HTTPBadRequest(_("No action specified"))
@@ -42,28 +49,8 @@ class ValidateController(object):
             raise exc.HTTPBadRequest(_("Insufficient payload"))
 
         LOG.info(_LI('Processing Request'))
-        n = NovaClient(request.context)
 
-        # find the image id
-        image = n.get_image_by_name(image)
-        if not image:
-            raise exception.ImageNotFound
-
-        machine = "%s-validate" % body['image']
-
-        # if the machine already exists, destroy it
-        if n.get_machine(machine):
-            LOG.info(_LI("Server %s already exists, deleting" % machine))
-            n.delete_machine(machine)
-
-        # deploy machine
-        n.deploy_machine(machine, image=image['name'])
-        ip = n.get_ip()
-
-        # send knife command
-        # c = ChefClient(ip)
-        d = DockerClient()
-        res = d.recipe_deployment_test(recipe)
+        res = ValidateEngine().validate_recipe(recipe, image, request)
         return res
 
 

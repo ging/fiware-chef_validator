@@ -31,8 +31,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def dock_image():
+    "generate docker image"
     import sys
-    dc = DockerClient(base_url='unix://var/run/docker.sock')
+    dc = DockerClient(base_url=CONF.clients_chef.url)
     # inject config files dir to syspath
     sys.path.insert(0, CONF.config_dir)
     with open(r"ChefImage.docker") as dockerfile:
@@ -42,10 +43,11 @@ def dock_image():
             tag=CONF.tag
         )
     for l in resp:
-        print l
+        LOG.debug(l)
 
 
 def cmdline_upload():
+    "upload docker image to glance via commandline"
     # only admin can upload images from commandline
     os.environ.update({'OS_USERNAME': 'admin'})
     cmd = "docker save {name} | " \
@@ -59,6 +61,7 @@ def cmdline_upload():
 
 
 def upload_to_glance():
+    "upload docker image to glance via buffer"
     LOG.debug("Connecting Glance Client")
     gdata = get_glance_connection()
     gc = GlanceClient.Client(**gdata)
@@ -73,8 +76,9 @@ def upload_to_glance():
 
 
 def dump_docker_image():
+    "generate file from docker image"
     LOG.debug("Dumping Docker Image %s" % CONF.tag)
-    dc = DockerClient(base_url='unix://var/run/docker.sock')
+    dc = DockerClient(base_url=CONF.clients_chef.url)
     with open("/tmp/temp.tar", 'wb') as image_tar:
         image_tar.write(dc.get_image("%s:latest" % CONF.tag).data)
     del dc
@@ -82,6 +86,7 @@ def dump_docker_image():
 
 
 def upload_glance_image_from_file(gc):
+    "upload file image to glance"
     LOG.debug("Generating Glance Image")
     with open("/tmp/temp.tar", 'rb') as image_tar:
         gc.images.create(

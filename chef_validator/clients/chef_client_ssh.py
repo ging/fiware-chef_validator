@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may
 #  not use this file except in compliance with the License. You may obtain
 #  a copy of the License at
@@ -11,52 +10,70 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-from docker.errors import DockerException
+
+
 from oslo_log import log as logging
 from oslo_config import cfg
-from docker import Client as DC
 
-from chef_validator.common.exception import CookbookSyntaxException, \
-    RecipeDeploymentException, \
-    CookbookInstallException, \
-    DockerContainerException
-from chef_validator.common.i18n import _LW, _LE
+from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, RecipeDeploymentException, \
+    CookbookInstallException
+from chef_validator.common.i18n import _LW
 
 LOG = logging.getLogger(__name__)
 
 opts = [
-    cfg.StrOpt('url'),
-    cfg.StrOpt('image'),
+    cfg.StrOpt('username'),
+    cfg.StrOpt('password'),
+    cfg.StrOpt('cmd_install'),
+    cfg.StrOpt('cmd_inject'),
+    cfg.StrOpt('cmd_test'),
+    cfg.StrOpt('cmd_launch')
 ]
 CONF = cfg.CONF
-CONF.register_opts(opts, group="clients_docker")
+CONF.register_opts(opts, group="clients_chef")
 
 
-class DockerClient(object):
-    """
-    Wrapper for Docker client
-    """
+# todo stub for pycrypto dependencies on win
+import os
+if 'nt' in os.name:
+    class SSHClient(object):
+        """SSHClient stub"""
+        @staticmethod
+        def set_missing_host_key_policy(dummy):
+            """set_missing_host_key_policy stub"""
+            pass
 
-    def __init__(self, url=CONF.clients_docker.url):
-        self._url = url
-        self.container = None
-        try:
-            self.dc = DC(base_url=self._url)
-        except DockerException as e:
-            LOG.error(_LE("Docker client error: %s") % e)
-            raise e
+    class AutoAddPolicy(object):
+        """AutoAddPolicy stub"""
+        pass
+else:
+    from paramiko import SSHClient, AutoAddPolicy
 
-    def recipe_deployment_test(self, recipe, image=CONF.clients_docker.image):
+
+class ChefClientSSH(object):
+    """ Chef client wrapper"""
+
+    def __init__(self, ip, user=CONF.clients_chef.username, passw=CONF.clients_chef.password):
         """
-        Try to process a recipe and return results
+        set internal parameters
+        :param ip: remote machine ip
+        :param user: remote machine user account name
+        :param passw: remote machine user account password
+        """
+        self._ip = ip
+        self._username = user
+        self._password = passw
+        self.ssh = None
+
+    def recipe_deploy_test(self, recipe):
+        """ Try to deploy the given recipe through an serial connection
         :param recipe: recipe to deploy
-        :param image: image to deploy to
-        :return: dictionary with results
+        :return: dict message with results
         """
-        LOG.debug("Sending recipe to docker server in %s" % self._url)
+        LOG.debug("Sending recipe to %s" % self._ip)
         b_success = True
         msg = {}
-        self.run_container(image)
+        self.connect_session()
         msg['install'] = self.run_install(recipe)
         b_success &= msg['install']['success']
         msg['test'] = self.run_test(recipe)
@@ -76,7 +93,7 @@ class DockerClient(object):
                 'result': "Error deploying recipe {}\n".format(recipe)
             }
             LOG.error(_LW(msg))
-        self.remove_container()
+        self.disconnect_session()
         return msg
 
     def run_deploy(self, recipe):
@@ -99,7 +116,7 @@ class DockerClient(object):
             if resp_launch is None or "FATAL" in resp_launch:
                 msg['success'] = False
         except Exception as e:
-            self.remove_container(self.container)
+            self.disconnect_session()
             LOG.error(_LW("Recipe deployment exception %s" % e))
             raise RecipeDeploymentException(recipe=recipe)
         return msg
@@ -120,7 +137,7 @@ class DockerClient(object):
                 if "ERROR" in line:
                     msg['success'] = False
         except Exception as e:
-            self.remove_container(self.container)
+            self.disconnect_session()
             LOG.error(_LW("Cookbook syntax exception %s" % e))
             raise CookbookSyntaxException(recipe=recipe)
         return msg
@@ -141,55 +158,38 @@ class DockerClient(object):
                 if "ERROR" in line:
                     msg['success'] = False
         except Exception as e:
-            self.remove_container(self.container)
-            LOG.error(_LW("Chef install exception: %s" % e))
+            self.disconnect_session()
+            LOG.error(_LW("Chef install exception %s" % e))
             raise CookbookInstallException(recipe=recipe)
         return msg
 
-    def run_container(self, image):
-        """Run and start a container based on the given image
-        :param image: image to run
+    def connect_session(self):
+        """
+        Connect to a session with the internal parameters
         :return:
         """
-        contname = "%s-validate" % image
+        self.ssh = SSHClient()
+        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
         try:
-            self.container = self.dc.create_container(
-                image,
-                tty=True,
-                name=contname
-            ).get('Id')
-            self.dc.start(container=self.container)
-        except AttributeError as e:
-            LOG.error(_LW("Error creating container: %s" % e))
-            raise DockerContainerException(image=image)
+            self.ssh.connect(
+                self._ip,
+                username=self._username,
+                password=self._password
+            )
+        except Exception as e:
+            LOG.error(_LW("SSH connect exception %s" % e))
+            raise SshConnectException(host=self._ip)
 
-    def remove_container(self, kill=True):
-        """destroy container on exit
-        :param kill: inhibits removal for testing purposes
+    def disconnect_session(self):
+        """close session on exit
         """
-        self.dc.stop(self.container)
-        if kill:
-            self.dc.remove_container(self.container)
+        self.ssh.disconnect()
 
     def execute_command(self, command):
         """ Execute a command in the given container
         :param command:  bash command to run
         :return:  execution result
         """
-        bash_txt = "/bin/bash -c \'{}\'".format(command)
-        exec_txt = self.dc.exec_create(
-            container=self.container,
-            cmd=bash_txt
-        )
-        return self.dc.exec_start(exec_txt)
-
-
-if __name__ == '__main__':
-    import logging
-
-    LOG = logging.getLogger()
-    logging.basicConfig(level=logging.DEBUG)
-    d = DockerClient("fakeurl")
-    import pprint
-
-    pprint.pprint(d.recipe_deployment_test("patata", image="pmverdugo/chef-solo"))
+        stdin, stdout, stderr = self.ssh.exec_command(command)
+        stdin.flush()
+        return stdout
