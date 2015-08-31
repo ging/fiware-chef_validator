@@ -16,15 +16,15 @@ oslo.i18n == 2.3.0
 oslo.log == 1.8.0
 oslo.config == 2.2.0
 oslo.middleware == 2.5.0
-oslo.messaging == 2.20
+oslo.messaging == 2.2.0
 oslo.service == 0.6.0
-oslo.utils = 2.2.0
+oslo.utils == 2.2.0
 
 # 1st step Authentication
-keystonemiddleware = 2.1.0
+keystonemiddleware == 2.1.0
 
 # Openstack Client APIs
-python-novaclient = 2.26.0
+python-novaclient == 2.26.0
 
 # Chef Image Generation
 docker-py == 1.3.1

@@ -4,9 +4,9 @@
 
 #testing
 # Hacking already pins down pep8, pyflakes and flake8
-hacking
-fixtures
-testtools
-nose
-mock
-mox
+hacking == 0.10.2
+fixtures == 1.3.1
+testtools == 1.8.0
+nose == 1.3.7
+mock == 1.2.0
+mox == 0.5.3
