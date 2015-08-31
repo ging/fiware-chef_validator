@@ -29,7 +29,7 @@ API Definition
 --------------
 
 The API definition can be found at
-<http://docs.chefvalidatorapi.apiary.io/#>
+[](http://docs.chefvalidatorapi.apiary.io/#)
 
 External Dependencies
 ---------------------
