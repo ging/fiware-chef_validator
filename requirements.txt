@@ -3,15 +3,6 @@
 # process, which may cause wedges in the gate later.
 
 # Infrastructure
-pbr == 1.4.0
-Babel == 2.0
-eventlet == 0.17.4
-Paste == 2.0.2
-PasteDeploy == 1.5.2
-paramiko == 1.15.2
-webob == 1.4.1
-Routes == 2.2
-
 oslo.utils == 2.2.0
 oslo.messaging == 2.2.0
 oslo.config == 2.2.0
@@ -20,6 +11,15 @@ oslo.log == 1.8.0
 oslo.service == 0.6.0
 oslo.concurrency == 2.4.0
 oslo.middleware == 2.5.0
+
+pbr == 1.4.0
+Babel == 2.0
+eventlet == 0.17.4
+Paste == 2.0.2
+PasteDeploy == 1.5.2
+paramiko == 1.15.2
+webob == 1.4.1
+Routes == 2.2
 
 # 1st step Authentication
 keystonemiddleware == 2.1.0

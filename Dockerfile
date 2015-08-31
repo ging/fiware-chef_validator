@@ -27,6 +27,7 @@ RUN apt-get install -y libffi-dev libssl-dev
 RUN git clone https://github.com/ging/fi-ware-chef_validator /opt/fi-ware-chef_validator 
 
 # Get pip to download and install requirements:
+RUN pip install --upgrade pip
 RUN pip install -r /opt/fi-ware-chef_validator/requirements.txt
 
 ##################### INSTALLATION END #####################
@@ -44,4 +45,4 @@ COPY etc/chef_validator/chef_validator.conf.sample etc/chef_validator/chef_valid
 ENV PYTHONPATH $PYTHONPATH:/opt/fi-ware-chef_validator/chef_validator
 
 # Launch API listener
-CMD ["python", "./chef_validator/cmd/chef-validator-api.py", "--config-dir=/opt/fi-ware-chef_validator/etc/chef_validator"]
+CMD ["python", "./chef_validator/cmd/chef-validator-api.py", "--config-dir=etc/chef_validator"]
