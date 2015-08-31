@@ -9,4 +9,4 @@ fixtures
 testtools
 nose
 mock
-oslotest
+mox

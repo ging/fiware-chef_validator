@@ -1,0 +1,1 @@
+oslo-config-generator --config-file=config-generator.conf
