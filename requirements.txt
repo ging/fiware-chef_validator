@@ -11,14 +11,15 @@ PasteDeploy == 1.5.2
 paramiko == 1.15.2
 webob == 1.4.1
 Routes == 2.2
-oslo.concurrency == 2.4.0
+
+oslo.utils == 2.2.0
+oslo.messaging == 2.2.0
+oslo.config == 2.2.0
 oslo.i18n == 2.3.0
 oslo.log == 1.8.0
-oslo.config == 2.2.0
-oslo.middleware == 2.5.0
-oslo.messaging == 2.2.0
 oslo.service == 0.6.0
-oslo.utils == 2.1.0
+oslo.concurrency == 2.4.0
+oslo.middleware == 2.5.0
 
 # 1st step Authentication
 keystonemiddleware == 2.1.0
