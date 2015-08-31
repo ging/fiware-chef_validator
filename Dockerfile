@@ -44,4 +44,4 @@ COPY etc/chef_validator/chef_validator.conf.sample etc/chef_validator/chef_valid
 ENV PYTHONPATH $PYTHONPATH:/opt/fi-ware-chef_validator/chef_validator
 
 # Launch API listener
-CMD ["python", "./bin/chef-validator-api.py", "--config-dir=/opt/fi-ware-chef_validator/etc/chef_validator"]
+CMD ["python", "./chef_validator/cmd/chef-validator-api.py", "--config-dir=/opt/fi-ware-chef_validator/etc/chef_validator"]

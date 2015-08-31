@@ -28,8 +28,7 @@ The listener api can be manually launched with the following command:
 API Definition
 --------------
 
-The API definition can be found at
-<http://docs.chefvalidatorapi.apiary.io/#>
+The API definition can be found at <http://docs.chefvalidatorapi.apiary.io/#>
 
 External Dependencies
 ---------------------

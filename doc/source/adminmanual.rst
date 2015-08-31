@@ -10,6 +10,7 @@
       WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
       License for the specific language governing permissions and limitations
       under the License.
+
 ======================================
 Installation and Administration manual
 ======================================
@@ -37,10 +38,10 @@ To install package dependencies you must run:
 Docker Container Install
 ------------------------
 
-As an alternative, if you have access to a docker server, you can pull and run the latest build from dockerhub with:
+As an alternative, if you have access to a docker server, you can pull and run the latest dev build from dockerhub with:
 ::
 
-    docker pull pmverdugo/fi-ware-chef_validator:latest
+    docker pull pmverdugo/fi-ware-chef_validator:dev
     docker run pmverdugo/fi-ware-chef_validator:latest
 
 

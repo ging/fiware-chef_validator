@@ -1,3 +1,5 @@
+# coding=utf-8
+
 FI-Ware Chef Validator
 ======================
 
@@ -60,9 +62,6 @@ The recipe validation process consists on the following steps:
     - Deploys the selected *Virtual Machine* image
     - Instructs the **Chef Server** to deploy the *recipe* in the given *Virtual Machine*
     - Responds to the **Client** request informing of the status of the validation process
-
-
-
 
 License
 -------
