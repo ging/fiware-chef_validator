@@ -23,6 +23,7 @@ LOG = logging.getLogger(__name__)
 
 opts = [
     cfg.StrOpt('cmd_install'),
+    cfg.StrOpt('cmd_config'),
     cfg.StrOpt('cmd_inject'),
     cfg.StrOpt('cmd_test'),
     cfg.StrOpt('cmd_launch')
@@ -80,7 +81,7 @@ class ChefClientSerial(object):
         """
         try:
             # inject custom solo.json file
-            json_cont = '{"run_list": [ "recipe[%s]"],}' % recipe
+            json_cont = CONF.clients_chef.cmd_config % recipe
             cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution

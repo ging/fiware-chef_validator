@@ -50,7 +50,8 @@ VALIDATOR_URL = os.environ.get('CHEF_VALIDATOR_URL', CONF.validator_url)
 def client():
     """ Sends a static request based on commandline arguments,
     logs the response """
-
+    if USERNAME is None or PASSWORD is None or VALIDATOR_URL is None:
+        raise Exception("Needed valid username, password and validator_url")
     # sample request data
     postdata = {
         "recipe": CONF.recipe,
@@ -66,9 +67,10 @@ def client():
     try:
         response = urllib2.urlopen(req, data)
         data = response.read()
+        data = json.loads(data)
     except urllib2.HTTPError as e:
         data = e.read()
-    pprint.pprint(json.loads(data))
+    pprint.pprint(data)
 
 
 if __name__ == '__main__':

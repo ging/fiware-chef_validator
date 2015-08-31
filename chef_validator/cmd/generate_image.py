@@ -25,29 +25,41 @@ from oslo_config import cfg
 
 from chef_validator.common.credentials import get_glance_connection
 
+opts = [
+    cfg.StrOpt('url'),
+    cfg.StrOpt('image'),
+]
 CONF = cfg.CONF
+CONF.register_opts(opts, group="clients_docker")
 LOG = logging.getLogger()
 logging.basicConfig(level=logging.DEBUG)
 
 
 def dock_image():
-    "generate docker image"
+    """generate docker image"""
     import sys
-    dc = DockerClient(base_url=CONF.clients_chef.url)
+    import os
+    status = True
+    dc = DockerClient(base_url=CONF.clients_docker.url)
     # inject config files dir to syspath
-    sys.path.insert(0, CONF.config_dir)
-    with open(r"ChefImage.docker") as dockerfile:
+    wp = os.path.abspath(CONF.config_dir)
+    sys.path.insert(0, wp)
+    os.chdir(wp)
+    with open("ChefImage.docker") as dockerfile:
         resp = dc.build(
             fileobj=dockerfile,
             rm=True,
-            tag=CONF.tag
+            tag=CONF.clients_docker.image
         )
     for l in resp:
+        if "error" in l.lower():
+            status = False
         LOG.debug(l)
+    return status
 
 
 def cmdline_upload():
-    "upload docker image to glance via commandline"
+    """upload docker image to glance via commandline"""
     # only admin can upload images from commandline
     os.environ.update({'OS_USERNAME': 'admin'})
     cmd = "docker save {name} | " \
@@ -61,7 +73,7 @@ def cmdline_upload():
 
 
 def upload_to_glance():
-    "upload docker image to glance via buffer"
+    """upload docker image to glance via buffer"""
     LOG.debug("Connecting Glance Client")
     gdata = get_glance_connection()
     gc = GlanceClient.Client(**gdata)
@@ -76,7 +88,7 @@ def upload_to_glance():
 
 
 def dump_docker_image():
-    "generate file from docker image"
+    """generate file from docker image"""
     LOG.debug("Dumping Docker Image %s" % CONF.tag)
     dc = DockerClient(base_url=CONF.clients_chef.url)
     with open("/tmp/temp.tar", 'wb') as image_tar:
@@ -105,8 +117,9 @@ def main():
     Uploads the generated image to the Glance server.
     :return:
     """
-    dock_image()
-    upload_to_glance()
+    ok = dock_image()
+    if ok:
+        upload_to_glance()
 
 
 if __name__ == '__main__':

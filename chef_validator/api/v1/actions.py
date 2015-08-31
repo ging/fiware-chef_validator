@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may
 #  not use this file except in compliance with the License. You may obtain
 #  a copy of the License at
@@ -10,15 +11,14 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
+""" Main action mapper"""
 
 from oslo_log import log as logging
 from oslo_config import cfg
 from webob import exc
 
 from chef_validator.common import wsgi
-
 from chef_validator.common.i18n import _LI, _
-
 import chef_validator.common.utils
 from chef_validator.engine.validate import ValidateEngine
 

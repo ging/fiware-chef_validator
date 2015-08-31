@@ -86,7 +86,7 @@ class DockerClient(object):
         """
         try:
             # inject custom solo.json file
-            json_cont = '{"run_list": [ "recipe[%s]"],}' % recipe
+            json_cont = CONF.clients_chef.cmd_config % recipe
             cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution
@@ -182,14 +182,3 @@ class DockerClient(object):
             cmd=bash_txt
         )
         return self.dc.exec_start(exec_txt)
-
-
-if __name__ == '__main__':
-    import logging
-
-    LOG = logging.getLogger()
-    logging.basicConfig(level=logging.DEBUG)
-    d = DockerClient("fakeurl")
-    import pprint
-
-    pprint.pprint(d.recipe_deployment_test("patata", image="pmverdugo/chef-solo"))

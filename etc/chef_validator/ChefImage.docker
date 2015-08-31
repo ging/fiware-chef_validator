@@ -26,7 +26,6 @@ RUN /opt/chefdk/embedded/bin/gem install knife-github-cookbooks && \
     mkdir /var/chef && \
     mkdir /etc/chef && \
     mkdir /var/chef/cookbooks  && \
-    touch /etc/chef/solo.log && \
     cd /var/chef/cookbooks && \
     git init && \
     git config user.name "demo" && \
@@ -37,8 +36,7 @@ RUN /opt/chefdk/embedded/bin/gem install knife-github-cookbooks && \
     rm -rf /tmp/*
 
 # Configure Chef-solo
-COPY ./solo.rb /etc/chef/solo.rb
-COPY ./solo.json /etc/chef/solo.json
+RUN echo 'cookbook_path "/var/chef/cookbooks"\nlog_level :debug' > /etc/chef/solo.rb
 
 # Set the default directory where CMD will execute
 WORKDIR /etc/chef

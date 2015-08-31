@@ -1,3 +1,2 @@
-cookbook_path "/etc/chef/cookbooks"
+cookbook_path "/var/chef/cookbooks"
 log_level :debug
-log_location "/etc/chef/solo.log"
