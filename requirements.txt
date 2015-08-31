@@ -8,12 +8,14 @@ Babel
 eventlet
 Paste
 PasteDeploy
+paramiko
 webob
 Routes
 oslo.i18n
 oslo.log
 oslo.config
 oslo.middleware
+oslo.messaging
 oslo.service
 
 # 1st step Authentication

@@ -102,7 +102,7 @@ def _get_deployment_config_file():
     """
     path = CONF.paste_deploy.config_file
     if CONF.debug:
-        return os.path.abspath(os.path.join("./etc/chef_validator", path))
+        return os.path.abspath(os.path.join(CONF.config_dir, path))
     if not path:
         path = _get_paste_config_path()
     if not path:
