@@ -86,7 +86,7 @@ class DockerClient(object):
         """
         try:
             # inject custom solo.json file
-            json_cont = CONF.clients_chef.cmd_config % recipe
+            json_cont = CONF.clients_chef.cmd_config.format(recipe)
             cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution

@@ -35,6 +35,7 @@ class ChefClientTestCase(tb.ValidatorTestCase):
         CONF.set_override('cmd_install', "cmdinstall {}", group='clients_chef')
         CONF.set_override('cmd_inject', "cmdinject {}", group='clients_chef')
         CONF.set_override('cmd_launch', "cmdlaunch {}", group='clients_chef')
+        CONF.set_override('cmd_config', "cmdconfig {}", group='clients_chef')
 
     def test_connect_session(self):
         """ Test client creation"""
@@ -49,8 +50,9 @@ class ChefClientTestCase(tb.ValidatorTestCase):
 
     def test_run_deploy(self):
         self.client.execute_command = self.m.CreateMockAnything()
+        self.client.ssh = mock.MagicMock()
         self.client.container = "1234"
-        self.client.execute_command('cmdinject {"run_list": [ "recipe[fakerecipe]"],}').AndReturn("Alls good")
+        self.client.execute_command('cmdinject cmdconfig fakerecipe').AndReturn("Alls good")
         self.client.execute_command('cmdlaunch {}').AndReturn("Alls good")
         self.m.ReplayAll()
         obs = self.client.run_deploy("fakerecipe")

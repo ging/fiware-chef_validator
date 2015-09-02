@@ -43,6 +43,8 @@ if 'nt' in os.name:
         def set_missing_host_key_policy(dummy):
             """set_missing_host_key_policy stub"""
             pass
+        def disconnect(self):
+            pass
 
     class AutoAddPolicy(object):
         """AutoAddPolicy stub"""
@@ -54,7 +56,12 @@ else:
 class ChefClientSSH(object):
     """ Chef client wrapper"""
 
-    def __init__(self, ip, user=CONF.clients_chef.username, passw=CONF.clients_chef.password):
+    def __init__(
+            self,
+            ip,
+            user=CONF.clients_chef.username,
+            passw=CONF.clients_chef.password
+    ):
         """
         set internal parameters
         :param ip: remote machine ip
@@ -104,7 +111,7 @@ class ChefClientSSH(object):
         """
         try:
             # inject custom solo.json file
-            json_cont = CONF.clients_chef.cmd_config % recipe
+            json_cont = CONF.clients_chef.cmd_config.format(recipe)
             cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution

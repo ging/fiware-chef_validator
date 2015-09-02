@@ -61,13 +61,15 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         self.m.VerifyAll()
 
     def test_run_deploy(self):
+        self.client.ssh = mock.MagicMock()
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdinject {"run_list": [ "recipe[fakerecipe]"],}').AndReturn("Alls good")
+        self.client.execute_command('cmdinject cmdconfig fakerecipe').AndReturn("Alls good")
         self.client.execute_command('cmdlaunch {}').AndReturn("Alls good")
         self.m.ReplayAll()
+        self.client.dc = mock.MagicMock()
         obs = self.client.run_deploy("fakerecipe")
-        expected = "{'response': u'Alls good', 'success': True}"
+        expected = 'None'
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()
 
