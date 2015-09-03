@@ -22,6 +22,7 @@ Contents:
 .. include:: ../../README.rst
 .. include:: .usermanual.rst
 .. include:: .adminmanual.rst
+
 Code Documentation
 ==================
 .. toctree::

@@ -55,7 +55,7 @@ def client():
     # sample request data
     postdata = {
         "recipe": CONF.recipe,
-        "image": 'cirros-0.3.4-x86_64-uec'  # CONF.image
+        "image": CONF.image
     }
 
     # sends the request
@@ -69,7 +69,7 @@ def client():
         data = response.read()
         data = json.loads(data)
     except urllib2.HTTPError as e:
-        data = e.read()
+        data = e
     pprint.pprint(data)
 
 

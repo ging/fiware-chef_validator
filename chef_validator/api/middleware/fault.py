@@ -135,13 +135,28 @@ class FaultWrapper(wsgi.Middleware):
             webob_exc = self._map_exception_to_error(ex.__class__)
 
         error = {
-            'code': webob_exc.code,
-            'title': webob_exc.title,
-            'explanation': webob_exc.explanation,
-            'error': {
-                'message': message,
-                'type': ex_type,
-                'traceback': trace,
+            'success': False,
+            'response': {
+                'code': webob_exc.code,
+                'title': webob_exc.title,
+                'explanation': webob_exc.explanation,
+                'error': {
+                    'message': message,
+                    'type': ex_type,
+                    'traceback': trace,
+                }
+            },
+            'install': {
+                'success': False,
+                'response': ''
+            },
+            'test': {
+                'success': False,
+                'response': ''
+            },
+            'deploy': {
+                'success': False,
+                'response': ''
             }
         }
 

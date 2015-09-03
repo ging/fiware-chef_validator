@@ -45,7 +45,6 @@ As an alternative, if you have access to a docker server, you can pull and run t
     docker run pmverdugo/fi-ware-chef_validator:latest
 
 
-
 Sanity Check Procedures
 =======================
 
@@ -62,7 +61,10 @@ in the root folder
 Running processes
 -----------------
 
-The only running process should be python chef-validator-api.py
+The only running process should be
+::
+
+    /usr/bin/python chef-validator-api.py
 
 Network Interfaces Up and Open
 ------------------------------

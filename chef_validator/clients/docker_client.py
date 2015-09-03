@@ -20,7 +20,7 @@ from chef_validator.common.exception import CookbookSyntaxException, \
     RecipeDeploymentException, \
     CookbookInstallException, \
     DockerContainerException
-from chef_validator.common.i18n import _LW, _LE
+from chef_validator.common.i18n import _LW, _LE,_
 
 LOG = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class DockerClient(object):
         """
         try:
             # inject custom solo.json file
-            json_cont = CONF.clients_chef.cmd_config.format(recipe)
+            json_cont = CONF.clients_chef.cmd_config % recipe
             cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution
@@ -96,6 +96,7 @@ class DockerClient(object):
                 'success': True,
                 'response': resp_launch
             }
+            LOG.debug(_("Launch result: %s") % resp_launch)
             if resp_launch is None or "FATAL" in resp_launch:
                 msg['success'] = False
         except Exception as e:
@@ -119,6 +120,7 @@ class DockerClient(object):
             for line in resp_test.splitlines():
                 if "ERROR" in line:
                     msg['success'] = False
+            LOG.debug(_("Test result: %s") % resp_test)
         except Exception as e:
             self.remove_container(self.container)
             LOG.error(_LW("Cookbook syntax exception %s" % e))
@@ -140,6 +142,7 @@ class DockerClient(object):
             for line in resp_install.splitlines():
                 if "ERROR" in line:
                     msg['success'] = False
+            LOG.debug(_("Install result: %s") % resp_install)
         except Exception as e:
             self.remove_container(self.container)
             LOG.error(_LW("Chef install exception: %s" % e))
@@ -151,7 +154,7 @@ class DockerClient(object):
         :param image: image to run
         :return:
         """
-        contname = "%s-validate" % image
+        contname = "{}-validate".format(image).replace("/", "_")
         try:
             self.container = self.dc.create_container(
                 image,

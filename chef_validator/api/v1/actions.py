@@ -48,8 +48,7 @@ class ValidateController(object):
         except KeyError:
             raise exc.HTTPBadRequest(_("Insufficient payload"))
 
-        LOG.info(_LI('Processing Request'))
-
+        LOG.info(_LI('Processing Request for recipe %s, image %s' % (recipe, image)))
         res = ValidateEngine().validate_recipe(recipe, image, request)
         return res
 

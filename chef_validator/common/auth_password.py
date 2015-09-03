@@ -17,8 +17,11 @@
 from keystoneclient import exceptions as keystone_exceptions
 from keystoneclient import session
 from webob import exc
-
+from oslo_log import log as logging
+from chef_validator.common.i18n import _LE
 from chef_validator.common import context
+
+LOG = logging.getLogger(__name__)
 
 
 class KeystonePasswordAuthProtocol(object):
@@ -58,6 +61,7 @@ class KeystonePasswordAuthProtocol(object):
                 keystone_exceptions.Forbidden,
                 keystone_exceptions.NotFound,
                 keystone_exceptions.AuthorizationFailure):
+            LOG.error(_LE("Context build failed"))
             return self._reject_request(env, start_response, auth_url)
         env.update(self._build_user_headers(auth_ref))
 
@@ -73,7 +77,6 @@ class KeystonePasswordAuthProtocol(object):
     @staticmethod
     def _build_user_headers(token_info):
         """Build headers that represent authenticated user from auth token."""
-
         if token_info.get('version') == 'v3':
             keystone_token_info = {'token': token_info}
             tenant_id = token_info['project']['id']
@@ -106,7 +109,6 @@ class KeystonePasswordAuthProtocol(object):
             'HTTP_X_SERVICE_CATALOG': service_catalog,
             'HTTP_X_AUTH_TOKEN': auth_token,
         }
-
         return headers
 
 
