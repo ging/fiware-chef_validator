@@ -85,17 +85,22 @@ verbose = true
 # Enables or disables fatal status of deprecations. (boolean value)
 #fatal_deprecations = false
 
-bind_host = 127.0.0.1
+# Host/port to listen to
+bind_host = 0.0.0.0
 bind_port = 4042
-
-[keystone_authtoken]
-admin_user = admin
-admin_password = admin
-identity_uri = http://127.0.0.1:35357/
-auth_uri = http://127.0.0.1:5000/
 
 [paste_deploy]
 flavor=standalone
 
-[filter:authtoken]
-paste.filter_factory = keystonemiddleware.auth_token:filter_factory
+[keystone_authtoken]
+auth_uri = http://172.17.42.1:5000/v2.0
+
+[clients_chef]
+cmd_install = knife cookbook site install {}
+cmd_config = {"run_list": [ "recipe[%s]"]}
+cmd_inject  = echo '{}' >/etc/chef/solo.json
+cmd_test    = knife cookbook test {}
+cmd_launch  = chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json
+
+[clients_docker]
+url = tcp://172.17.42.1:2375
