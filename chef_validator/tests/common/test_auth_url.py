@@ -18,7 +18,7 @@ import mock
 import webob
 from webob import exc
 
-from chef_validator.common import auth_url
+from chef_validator.api.middleware import auth_url
 from chef_validator.tests.base import ValidatorTestCase
 
 

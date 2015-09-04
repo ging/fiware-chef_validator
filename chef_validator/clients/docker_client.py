@@ -57,6 +57,10 @@ class DockerClient(object):
         b_success = True
         msg = {}
         self.run_container(image)
+        # inject custom solo.json/solo.rb file
+        json_cont = CONF.clients_chef.cmd_config % recipe
+        cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
+        self.execute_command(cmd_inject)
         msg['install'] = self.run_install(recipe)
         b_success &= msg['install']['success']
         msg['test'] = self.run_test(recipe)
@@ -85,10 +89,6 @@ class DockerClient(object):
         :return msg: dictionary with results and state
         """
         try:
-            # inject custom solo.json file
-            json_cont = CONF.clients_chef.cmd_config % recipe
-            cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
-            self.execute_command(cmd_inject)
             # launch execution
             cmd_launch = CONF.clients_chef.cmd_launch
             resp_launch = self.execute_command(cmd_launch)

@@ -20,7 +20,7 @@ from keystoneclient import session as ks_session
 import mox
 import webob
 
-from chef_validator.common import auth_password
+from chef_validator.api.middleware import auth_password
 from chef_validator.tests.base import ValidatorTestCase
 
 EXPECTED_ENV_RESPONSE = {
