@@ -84,6 +84,7 @@ class FaultWrapper(wsgi.Middleware):
         'IncompatibleObjectVersion': webob.exc.HTTPBadRequest,
         'OrphanedObjectError': webob.exc.HTTPBadRequest,
         'UnsupportedObjectError': webob.exc.HTTPBadRequest,
+        'BadStatusLine': webob.exc.HTTPBadRequest,
     }
 
     def _map_exception_to_error(self, class_exception):

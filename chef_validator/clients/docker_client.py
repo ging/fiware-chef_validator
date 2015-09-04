@@ -11,7 +11,7 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-from docker.errors import DockerException
+from docker.errors import DockerException, NotFound
 from oslo_log import log as logging
 from oslo_config import cfg
 from docker import Client as DC
@@ -20,7 +20,7 @@ from chef_validator.common.exception import CookbookSyntaxException, \
     RecipeDeploymentException, \
     CookbookInstallException, \
     DockerContainerException
-from chef_validator.common.i18n import _LW, _LE,_
+from chef_validator.common.i18n import _LW, _LE, _, _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -61,6 +61,7 @@ class DockerClient(object):
         json_cont = CONF.clients_chef.cmd_config % recipe
         cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
         self.execute_command(cmd_inject)
+
         msg['install'] = self.run_install(recipe)
         b_success &= msg['install']['success']
         msg['test'] = self.run_test(recipe)
@@ -156,6 +157,11 @@ class DockerClient(object):
         """
         contname = "{}-validate".format(image).replace("/", "_")
         try:
+            try:
+                self.dc.remove_container(contname, force=True)
+                LOG.info(_LI('Removing old %s container' % contname))
+            except NotFound:
+                pass
             self.container = self.dc.create_container(
                 image,
                 tty=True,
@@ -179,7 +185,7 @@ class DockerClient(object):
         :param command:  bash command to run
         :return:  execution result
         """
-        bash_txt = "/bin/bash -c \'{}\'".format(command)
+        bash_txt = "/bin/bash -c \"{}\"".format(command.replace('"', '\\"'))
         exec_txt = self.dc.exec_create(
             container=self.container,
             cmd=bash_txt

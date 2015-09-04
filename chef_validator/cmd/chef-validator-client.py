@@ -69,7 +69,7 @@ def client():
         data = response.read()
         data = json.loads(data)
     except urllib2.HTTPError as e:
-        data = e
+        data = e.read()
     pprint.pprint(data)
 
 
