@@ -77,7 +77,7 @@ class ImageNotFound(OpenstackException):
 
 
 class AmbiguousNameException(OpenstackException):
-    msg_fmt = _("Image name '%(name)s' is ambiguous")
+    msg_fmt = _("Image name %(name)s is ambiguous")
 
 
 # Chef exceptions

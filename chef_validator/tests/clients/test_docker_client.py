@@ -61,17 +61,13 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         self.m.VerifyAll()
 
     def test_run_deploy(self):
-        self.client.ssh = mock.MagicMock()
-        self.client.execute_command = self.m.CreateMockAnything()
-        self.client.container = "1234"
-        self.client.execute_command('cmdinject cmdconfig fakerecipe').AndReturn("Alls good")
-        self.client.execute_command('cmdlaunch {}').AndReturn("Alls good")
-        self.m.ReplayAll()
-        self.client.dc = mock.MagicMock()
-        obs = self.client.run_deploy("fakerecipe")
-        expected = 'None'
+        self.client.execute_command = mock.MagicMock()
+        self.client.execute_command.return_value = "Alls good"
+        self.client.run_deploy("myrecipe")
+        obs = self.client.run_test("fakerecipe")
+        expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
-        self.m.VerifyAll()
+
 
     def test_run_install(self):
         self.client.execute_command = self.m.CreateMockAnything()
@@ -97,7 +93,7 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         """Test a command execution in container"""
         self.client.dc = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.dc.exec_create(cmd="/bin/bash -c 'mycommand'", container=u'1234').AndReturn("validcmd")
+        self.client.dc.exec_create(cmd='/bin/bash -c "mycommand"', container=u'1234').AndReturn("validcmd")
         self.client.dc.exec_start("validcmd").AndReturn("OK")
         self.m.ReplayAll()
         obs = self.client.execute_command("mycommand")
