@@ -17,4 +17,12 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.api.middleware.auth_url """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.api.middleware.auth_url import AuthUrlFilter
 
+
+def TestAuthUrlFilter(ValidatorTestCase):
+    """ Tests for class AuthUrlFilter """
+
+    def test_process_request(self):
+        """ Tests for method process_request """
+        pass

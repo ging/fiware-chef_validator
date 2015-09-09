@@ -17,4 +17,12 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.api.v1.actions """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.api.v1.actions import ValidateController
 
+
+def TestValidateController(ValidatorTestCase):
+    """ Tests for class ValidateController """
+
+    def test_validate(self):
+        """ Tests for method validate """
+        pass

@@ -17,4 +17,28 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.common.utils """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.common.utils import JSONDeserializer
+from chef_validator.common.utils import JSONSerializer
 
+
+def TestJSONDeserializer(ValidatorTestCase):
+    """ Tests for class JSONDeserializer """
+
+    def test_dispatch(self):
+        """ Tests for method dispatch """
+        pass
+
+    def test_deserialize(self):
+        """ Tests for method deserialize """
+        pass
+
+    def test_default(self):
+        """ Tests for method default """
+        pass
+
+def TestJSONSerializer(ValidatorTestCase):
+    """ Tests for class JSONSerializer """
+
+    def test_default(self):
+        """ Tests for method default """
+        pass

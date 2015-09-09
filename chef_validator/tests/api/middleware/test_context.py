@@ -17,4 +17,32 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.api.middleware.context """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.api.middleware.context import ContextMiddleware
+from chef_validator.api.middleware.context import RequestContext
 
+
+def TestContextMiddleware(ValidatorTestCase):
+    """ Tests for class ContextMiddleware """
+
+    def test_make_context(self):
+        """ Tests for method make_context """
+        pass
+
+    def test_process_request(self):
+        """ Tests for method process_request """
+        pass
+
+def TestRequestContext(ValidatorTestCase):
+    """ Tests for class RequestContext """
+
+    def test_to_dict(self):
+        """ Tests for method to_dict """
+        pass
+
+    def test_from_dict(self):
+        """ Tests for method from_dict """
+        pass
+
+    def test_auth_plugin(self):
+        """ Tests for method auth_plugin """
+        pass

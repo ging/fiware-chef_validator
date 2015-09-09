@@ -17,4 +17,12 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.api.middleware.ssl """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.api.middleware.ssl import SSLMiddleware
 
+
+def TestSSLMiddleware(ValidatorTestCase):
+    """ Tests for class SSLMiddleware """
+
+    def test_process_request(self):
+        """ Tests for method process_request """
+        pass

@@ -17,4 +17,9 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.api.middleware.auth_password """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.api.middleware.auth_password import KeystonePasswordAuthProtocol
 
+
+def TestKeystonePasswordAuthProtocol(ValidatorTestCase):
+    """ Tests for class KeystonePasswordAuthProtocol """
+    pass

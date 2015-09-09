@@ -17,4 +17,17 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.api.middleware.fault """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.api.middleware.fault import Fault
+from chef_validator.api.middleware.fault import FaultWrapper
 
+
+def TestFault(ValidatorTestCase):
+    """ Tests for class Fault """
+    pass
+
+def TestFaultWrapper(ValidatorTestCase):
+    """ Tests for class FaultWrapper """
+
+    def test_process_request(self):
+        """ Tests for method process_request """
+        pass

@@ -17,4 +17,9 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.clients.keystone_client """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.clients.keystone_client import KeystoneClient
 
+
+def TestKeystoneClient(ValidatorTestCase):
+    """ Tests for class KeystoneClient """
+    pass

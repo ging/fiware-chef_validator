@@ -17,4 +17,29 @@ from __future__ import unicode_literals
 """ Tests for chef_validator.clients.glance_client """
 
 from chef_validator.tests.base import ValidatorTestCase
+from chef_validator.clients.glance_client import AmbiguousNameException
+from chef_validator.clients.glance_client import GlanceClient
 
+
+def TestAmbiguousNameException(ValidatorTestCase):
+    """ Tests for class AmbiguousNameException """
+    pass
+
+def TestGlanceClient(ValidatorTestCase):
+    """ Tests for class GlanceClient """
+
+    def test_list(self):
+        """ Tests for method list """
+        pass
+
+    def test_get_by_name(self):
+        """ Tests for method get_by_name """
+        pass
+
+    def test_getById(self):
+        """ Tests for method getById """
+        pass
+
+    def test_create_glance_client(self):
+        """ Tests for method create_glance_client """
+        pass
