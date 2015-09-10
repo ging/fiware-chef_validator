@@ -12,14 +12,26 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-
-from __future__ import unicode_literals
 """ Tests for chef_validator.clients.keystone_client """
+from __future__ import unicode_literals
 
-from chef_validator.tests.base import ValidatorTestCase
+import mock
 from chef_validator.clients.keystone_client import KeystoneClient
 
+from chef_validator.tests.base import ValidatorTestCase
 
-def TestKeystoneClient(ValidatorTestCase):
+
+class KeystoneClientTestCase(ValidatorTestCase):
     """ Tests for class KeystoneClient """
-    pass
+
+    def setUp(self):
+        """ Create a KeystoneClient instance """
+        super(KeystoneClientTestCase, self).setUp()
+        self.item = KeystoneClient()
+
+
+    def tearDown(self):
+        """ Cleanup the KeystoneClient instance """
+        super(KeystoneClientTestCase, self).tearDown()
+        self.m.UnsetStubs()
+        self.m.ResetAll()

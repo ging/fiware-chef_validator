@@ -12,17 +12,35 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-
-from __future__ import unicode_literals
 """ Tests for chef_validator.engine.validate """
+from __future__ import unicode_literals
 
-from chef_validator.tests.base import ValidatorTestCase
+import mock
 from chef_validator.engine.validate import ValidateEngine
 
+from chef_validator.tests.base import ValidatorTestCase
 
-def TestValidateEngine(ValidatorTestCase):
+
+class ValidateEngineTestCase(ValidatorTestCase):
     """ Tests for class ValidateEngine """
+
+    def setUp(self):
+        """ Create a ValidateEngine instance """
+        super(ValidateEngineTestCase, self).setUp()
+        self.item = ValidateEngine()
+
 
     def test_validate_recipe(self):
         """ Tests for method validate_recipe """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.validate_recipe(input)
+        self.assertEqual(expected, observed)
+
+    def tearDown(self):
+        """ Cleanup the ValidateEngine instance """
+        super(ValidateEngineTestCase, self).tearDown()
+        self.m.UnsetStubs()
+        self.m.ResetAll()

@@ -12,41 +12,89 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-
-from __future__ import unicode_literals
 """ Tests for chef_validator.clients.chef_client_serial """
+from __future__ import unicode_literals
 
-from chef_validator.tests.base import ValidatorTestCase
+import mock
 from chef_validator.clients.chef_client_serial import ChefClientSerial
 
+from chef_validator.tests.base import ValidatorTestCase
 
-def TestChefClientSerial(ValidatorTestCase):
+
+class ChefClientSerialTestCase(ValidatorTestCase):
     """ Tests for class ChefClientSerial """
+
+    def setUp(self):
+        """ Create a ChefClientSerial instance """
+        super(ChefClientSerialTestCase, self).setUp()
+        self.item = ChefClientSerial()
+
 
     def test_recipe_deploy_test(self):
         """ Tests for method recipe_deploy_test """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.recipe_deploy_test(input)
+        self.assertEqual(expected, observed)
 
     def test_run_deploy(self):
         """ Tests for method run_deploy """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.run_deploy(input)
+        self.assertEqual(expected, observed)
 
     def test_run_test(self):
         """ Tests for method run_test """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.run_test(input)
+        self.assertEqual(expected, observed)
 
     def test_run_install(self):
         """ Tests for method run_install """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.run_install(input)
+        self.assertEqual(expected, observed)
 
     def test_connect_session(self):
         """ Tests for method connect_session """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.connect_session(input)
+        self.assertEqual(expected, observed)
 
     def test_disconnect_session(self):
         """ Tests for method disconnect_session """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.disconnect_session(input)
+        self.assertEqual(expected, observed)
 
     def test_execute_command(self):
         """ Tests for method execute_command """
-        pass
+        self.item.external = mock.MagicMock()
+        input = "MyInput"
+        expected = "OK"
+        self.item.external.return_value = "OK"
+        observed = self.item.execute_command(input)
+        self.assertEqual(expected, observed)
+
+    def tearDown(self):
+        """ Cleanup the ChefClientSerial instance """
+        super(ChefClientSerialTestCase, self).tearDown()
+        self.m.UnsetStubs()
+        self.m.ResetAll()

@@ -12,9 +12,9 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-
-from __future__ import unicode_literals
 """ Tests for chef_validator.cmd.chef-validator-api """
+from __future__ import unicode_literals
+
+import mock
 
 from chef_validator.tests.base import ValidatorTestCase
-
