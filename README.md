@@ -15,7 +15,7 @@ FI-Ware Chef Validator
 - [Executing the listener API](#)
 - [External Dependencies](#)
 - [Validation Process](#)
-- [Example Client:](#)
+- [Example Client](#)
 - [Chef Image generation](#)
 	
 Description
@@ -101,7 +101,7 @@ The recipe validation process consists on the following steps:
     - Instructs the **Chef Server** to deploy the *recipe* in the given *Virtual Machine*
     - Responds to the **Client** request informing of the status of the validation process
 
-Example Client:
+Example Client
 ---------------
 An example client is provided in cmd/chef-validator-client. It can be run with the following command:
 
