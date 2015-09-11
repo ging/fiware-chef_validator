@@ -1,8 +1,36 @@
 FI-Ware Chef Validator
 ======================
+Description
+-----------
 
 An OpenStack validator for the deployment of chef recipes implemented as
 a service with an OpenStack-native Rest API
+
+Features Implemented
+--------------------
+A RESTful API for validation
+
+Installation Manual
+-------------------
+The installation manual is provided in rst format in the folder doc/source/adminmanual.rst
+
+Installation Verification
+-------------------------
+The sanity check procedures are detailed in doc/source/adminmanual.rst
+
+User Manual
+-----------
+The user manual is provided in rst format in the folder doc/source/usermanual.rst
+
+API Documentation
+-----------------
+
+The API definition can be found at <http://docs.chefvalidatorapi.apiary.io/#>
+
+License
+-------
+
+Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
 
 Getting Started
 ---------------
@@ -25,10 +53,6 @@ The listener api can be manually launched with the following command:
 
     chef_validator/cmd/chef-validator-api.py --config-dir etc/chef_validator
 
-API Definition
---------------
-
-The API definition can be found at <http://docs.chefvalidatorapi.apiary.io/#>
 
 External Dependencies
 ---------------------
@@ -71,7 +95,3 @@ A default chef-solo image can be automatically generated and uploaded to the gla
 
     chef_validator/cmd/generate_image.py --username=${username} --password=${password} --auth_url={$auth_url} --tag=${author/image_tag} --config-dir {configuration_dir}
 
-License
--------
-
-Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
