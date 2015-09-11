@@ -3,7 +3,7 @@ FI-Ware Chef Validator
 
 **Table of Contents**
 
-- [Description](#)
+- [Description](#Description)
 - [Features Implemented](#)
 - [Installation Manual](#)
 - [Installation Verification](#)
@@ -30,15 +30,15 @@ A RESTful API for validation
 
 Installation Manual
 -------------------
-The installation manual is provided in rst format in the folder doc/source/adminmanual.rst
+The installation manual is provided in rst format in the [Installation and Administration manual](doc/source/adminmanual.rst)
 
 Installation Verification
 -------------------------
-The sanity check procedures are detailed in doc/source/adminmanual.rst
+The sanity check procedures are detailed in the [Installation and Administration manual](doc/source/adminmanual.rst)
 
 User Manual
 -----------
-The user manual is provided in rst format in the folder doc/source/usermanual.rst
+The user manual is provided in rst format in the [User and Programmers manual](doc/source/usermanual.rst)
 
 API Documentation
 -----------------
