@@ -75,7 +75,7 @@ The recipe validation process consists on the following steps:
     - The name of the recipe to be tested
     - The *Github* repository from which to obtain the recipe
     - The virtual machine name for deployment
-2. The **Server** recieves the request and takes the following steps:
+2. The **Server** receives the request and takes the following steps:
     - Checks the user permissions to take the next steps by validating against Keystone
     - Downloads the needed *recipe*
     - Deploys the selected *Virtual Machine* image

@@ -1,0 +1,19 @@
+[DEFAULT]
+bind_host =  <%= node['fiware-chef_validator'][:host] %>
+bind_port =  <%= node['fiware-chef_validator'][:port] %>
+
+[paste_deploy]
+flavor=standalone
+
+[keystone_authtoken]
+auth_uri =  <%= node['fiware-chef_validator'][:keystone_url] %>
+
+[clients_chef]
+cmd_install = knife cookbook site install {}
+cmd_config = {"run_list": [ "recipe[%s]"]}
+cmd_inject  = echo '{}' >/etc/chef/solo.json
+cmd_test    = knife cookbook test {}
+cmd_launch  = chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json
+
+[clients_docker]
+url = <%= node['fiware-chef_validator'][:docker_url] %>
