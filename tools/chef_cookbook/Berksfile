@@ -1,8 +1,0 @@
-source "https://supermarket.chef.io"
-
-metadata
-
-cookbook "git"
-cookbook "apt"
-cookbook "build-essential"
-cookbook "poise-python"
