@@ -20,7 +20,7 @@ msgstr ""
 
 #: chef_validator/clients/chef.py:90
 #, python-format
-msgid "Recipe %s successfully deployed"
+msgid "Cookbook %s successfully deployed"
 msgstr ""
 
 #: chef_validator/common/auth_url.py:45

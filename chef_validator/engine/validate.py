@@ -29,11 +29,11 @@ class ValidateEngine(object):
     "Engine for validations"
 
     @staticmethod
-    def validate_recipe(recipe, image, request):
+    def validate_cookbook(cookbook, recipe, image, request):
         """
-        Recipe validation
+        Cookbook validation
         :param image: name of the image to deploy
-        :param recipe: name of the recipe to validate
+        :param cookbook: name of the cookbook to validate
         :param request: request context
         :return:
         """
@@ -44,7 +44,7 @@ class ValidateEngine(object):
 
             # use direct docker connection, fast and simple
             d = DockerClient()
-            res = d.recipe_deployment_test(recipe)
+            res = d.cookbook_deployment_test(cookbook, recipe, image)
         else:
             # nova client connection
             n = NovaClient(request.context)
@@ -54,7 +54,7 @@ class ValidateEngine(object):
             if not image:
                 raise exception.ImageNotFound
 
-            machine = "%s-validate" % recipe
+            machine = "%s-validate" % cookbook
 
             # if the machine already exists, destroy it
             if n.get_machine(machine):
@@ -65,7 +65,7 @@ class ValidateEngine(object):
             n.deploy_machine(machine, image=image['name'])
             ip = n.get_ip()
 
-            # deploy the recipe
+            # deploy the cookbook
             sercon = n.get_serial()
             if len(sercon) > 0:
                 # preferred serial connection
@@ -73,5 +73,5 @@ class ValidateEngine(object):
             else:
                 # generic ssh connection
                 c = ChefClientSSH(ip)
-            res = c.recipe_deploy_test(recipe)
+            res = c.cookbook_deploy_test(cookbook)
         return res

@@ -34,7 +34,7 @@ class ValidateController(object):
 
     @staticmethod
     def validate(request, body):
-        """ Validate the given recipe
+        """ Validate the given cookbook
         :param request: request context
         :param body: a json with deployment parameters
         :return : a json file with process results
@@ -43,13 +43,17 @@ class ValidateController(object):
         if len(body) < 1:
             raise exc.HTTPBadRequest(_("No action specified"))
         try:
-            recipe = body['recipe']
+            cookbook = body['cookbook']
             image = body['image']
         except KeyError:
             raise exc.HTTPBadRequest(_("Insufficient payload"))
 
-        LOG.info(_LI('Processing Request for recipe %s, image %s' % (recipe, image)))
-        res = ValidateEngine().validate_recipe(recipe, image, request)
+        if 'recipe' in body.keys():
+            recipe = body['recipe']
+        LOG.info(_LI('Processing Request for cookbook %s, recipe %s, image %s' % (
+            cookbook, recipe, image
+        )))
+        res = ValidateEngine().validate_cookbook(cookbook, recipe, image, request)
         return res
 
 

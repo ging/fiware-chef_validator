@@ -88,15 +88,15 @@ class SerialConnectException(OpenstackException):
     msg_fmt = _("The Serial connection to %(host)s could not be stablished.")
 
 class CookbookInstallException(OpenstackException):
-    msg_fmt = _("Error installing cookbook %(recipe)s")
+    msg_fmt = _("Error installing cookbook %(cookbook)s")
 
 
 class CookbookSyntaxException(OpenstackException):
-    msg_fmt = _("The provided cookbook syntax is incorrect for recipe: %(recipe)s")
+    msg_fmt = _("The provided cookbook syntax is incorrect for cookbook: %(cookbook)s")
 
 
-class RecipeDeploymentException(OpenstackException):
-    msg_fmt = _("Error deploying the provided recipe: %(recipe)s")
+class CookbookDeploymentException(OpenstackException):
+    msg_fmt = _("Error deploying the provided cookbook: %(cookbook)s")
 
 
 class DockerContainerException(OpenstackException):

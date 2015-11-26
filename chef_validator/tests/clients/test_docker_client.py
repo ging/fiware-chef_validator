@@ -63,8 +63,8 @@ class DockerClientTestCase(tb.ValidatorTestCase):
     def test_run_deploy(self):
         self.client.execute_command = mock.MagicMock()
         self.client.execute_command.return_value = "Alls good"
-        self.client.run_deploy("myrecipe")
-        obs = self.client.run_test("fakerecipe")
+        self.client.run_deploy("mycookbook")
+        obs = self.client.run_test("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
 
@@ -72,9 +72,9 @@ class DockerClientTestCase(tb.ValidatorTestCase):
     def test_run_install(self):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdinstall fakerecipe').AndReturn("Alls good")
+        self.client.execute_command('cmdinstall fakecookbook').AndReturn("Alls good")
         self.m.ReplayAll()
-        obs = self.client.run_install("fakerecipe")
+        obs = self.client.run_install("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()
@@ -82,9 +82,9 @@ class DockerClientTestCase(tb.ValidatorTestCase):
     def test_run_test(self):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdtest fakerecipe').AndReturn("Alls good")
+        self.client.execute_command('cmdtest fakecookbook').AndReturn("Alls good")
         self.m.ReplayAll()
-        obs = self.client.run_test("fakerecipe")
+        obs = self.client.run_test("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()

@@ -1,4 +1,4 @@
 {
-  "recipe": "memcached",
+  "cookbook": "memcached",
   "image": "chef_client"
 }

@@ -13,7 +13,7 @@
 #  under the License.
 
 """
-Chef Validator API Server. An OpenStack ReST API to Validate Chef Recipes.
+Chef Validator API Server. An OpenStack ReST API to Validate Chef Cookbooks.
 """
 
 from __future__ import unicode_literals

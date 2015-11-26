@@ -32,7 +32,7 @@ logging.setup(cfg.CONF, 'chef_validator_client')
 # local configuration
 opts = [
     cfg.StrOpt('image', help="Glance Image to deploy"),
-    cfg.StrOpt('recipe', help="Name of the recipe to deploy"),
+    cfg.StrOpt('cookbook', help="Name of the cookbook to deploy"),
     cfg.StrOpt('username', help="Keystone username"),
     cfg.StrOpt('password', help="Keystone password"),
     cfg.StrOpt('validator_url', help="Chef Validator Url"),
@@ -54,7 +54,7 @@ def client():
         raise Exception("Needed valid username, password and validator_url")
     # sample request data
     postdata = {
-        "recipe": CONF.recipe,
+        "cookbook": CONF.cookbook,
         "image": CONF.image
     }
 

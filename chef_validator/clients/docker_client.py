@@ -17,7 +17,7 @@ from oslo_config import cfg
 from docker import Client as DC
 
 from chef_validator.common.exception import CookbookSyntaxException, \
-    RecipeDeploymentException, \
+    CookbookDeploymentException, \
     CookbookInstallException, \
     DockerContainerException
 from chef_validator.common.i18n import _LW, _LE, _, _LI
@@ -46,47 +46,49 @@ class DockerClient(object):
             LOG.error(_LE("Docker client error: %s") % e)
             raise e
 
-    def recipe_deployment_test(self, recipe, image=CONF.clients_docker.image):
+    def cookbook_deployment_test(self, cookbook, recipe, image=CONF.clients_docker.image):
         """
-        Try to process a recipe and return results
+        Try to process a cookbook and return results
+        :param cookbook: cookbook to deploy
         :param recipe: recipe to deploy
         :param image: image to deploy to
         :return: dictionary with results
         """
-        LOG.debug("Sending recipe to docker server in %s" % self._url)
+        LOG.debug("Sending cookbook to docker server in %s" % self._url)
         b_success = True
         msg = {}
         self.run_container(image)
         # inject custom solo.json/solo.rb file
-        json_cont = CONF.clients_chef.cmd_config % recipe
-        cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
+        json_cont = CONF.clients_chef.cmd_config.format(
+            cookbook_name=cookbook, recipe_name=recipe)
+        cmd_inject = CONF.clients_chef.cmd_inject.format(config=json_cont)
         self.execute_command(cmd_inject)
 
-        msg['install'] = self.run_install(recipe)
+        msg['install'] = self.run_install(cookbook, recipe)
         b_success &= msg['install']['success']
-        msg['test'] = self.run_test(recipe)
+        msg['test'] = self.run_test(cookbook, recipe)
         b_success &= msg['test']['success']
-        msg['deploy'] = self.run_deploy(recipe)
+        msg['deploy'] = self.run_deploy(cookbook)
         b_success &= msg['deploy']['success']
 
         # check execution output
         if b_success:
             msg['result'] = {
                 'success': True,
-                'result': "Recipe %s successfully deployed\n" % recipe
+                'result': "Cookbook %s successfully deployed\n" % cookbook
             }
         else:
             msg['result'] = {
                 'success': False,
-                'result': "Error deploying recipe {}\n".format(recipe)
+                'result': "Error deploying cookbook {}\n".format(cookbook)
             }
             LOG.error(_LW(msg))
         self.remove_container()
         return msg
 
-    def run_deploy(self, recipe):
-        """ Run recipe deployment
-        :param recipe: recipe to deploy
+    def run_deploy(self, cookbook):
+        """ Run cookbook deployment
+        :param cookbook: cookbook to deploy
         :return msg: dictionary with results and state
         """
         try:
@@ -102,17 +104,18 @@ class DockerClient(object):
                 msg['success'] = False
         except Exception as e:
             self.remove_container(self.container)
-            LOG.error(_LW("Recipe deployment exception %s" % e))
-            raise RecipeDeploymentException(recipe=recipe)
+            LOG.error(_LW("Cookbook deployment exception %s" % e))
+            raise CookbookDeploymentException(cookbook=cookbook)
         return msg
 
-    def run_test(self, recipe):
+    def run_test(self, cookbook, recipe):
         """ Test cookbook syntax
-        :param recipe: recipe to test
+        :param cookbook: cookbook to test
         :return msg: dictionary with results and state
         """
         try:
-            cmd_test = CONF.clients_chef.cmd_test.format(recipe)
+            cmd_test = CONF.clients_chef.cmd_test.format(
+                cookbook_name=cookbook, recipe_name=recipe)
             resp_test = self.execute_command(cmd_test)
             msg = {
                 'success': True,
@@ -125,16 +128,17 @@ class DockerClient(object):
         except Exception as e:
             self.remove_container(self.container)
             LOG.error(_LW("Cookbook syntax exception %s" % e))
-            raise CookbookSyntaxException(recipe=recipe)
+            raise CookbookSyntaxException(cookbook=cookbook)
         return msg
 
-    def run_install(self, recipe):
+    def run_install(self, cookbook, recipe):
         """Run download and install command
-        :param recipe: recipe to process
+        :param cookbook: cookbook to process
         :return msg: operation result
         """
         try:
-            cmd_install = CONF.clients_chef.cmd_install.format(recipe)
+            cmd_install = CONF.clients_chef.cmd_install.format(
+                cookbook_name=cookbook, recipe_name=recipe)
             resp_install = self.execute_command(cmd_install)
             msg = {
                 'success': True,
@@ -147,7 +151,7 @@ class DockerClient(object):
         except Exception as e:
             self.remove_container(self.container)
             LOG.error(_LW("Chef install exception: %s" % e))
-            raise CookbookInstallException(recipe=recipe)
+            raise CookbookInstallException(cookbook=cookbook)
         return msg
 
     def run_container(self, image):

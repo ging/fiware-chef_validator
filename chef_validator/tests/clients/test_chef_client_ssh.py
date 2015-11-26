@@ -52,10 +52,10 @@ class ChefClientTestCase(tb.ValidatorTestCase):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.ssh = mock.MagicMock()
         self.client.container = "1234"
-        self.client.execute_command('cmdinject cmdconfig fakerecipe').AndReturn("Alls good")
+        self.client.execute_command('cmdinject cmdconfig fakecookbook').AndReturn("Alls good")
         self.client.execute_command('cmdlaunch {}').AndReturn("Alls good")
         self.m.ReplayAll()
-        obs = self.client.run_deploy("fakerecipe")
+        obs = self.client.run_deploy("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()
@@ -63,9 +63,9 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     def test_run_install(self):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdinstall fakerecipe').AndReturn("Alls good")
+        self.client.execute_command('cmdinstall fakecookbook').AndReturn("Alls good")
         self.m.ReplayAll()
-        obs = self.client.run_install("fakerecipe")
+        obs = self.client.run_install("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()
@@ -73,9 +73,9 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     def test_run_test(self):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdtest fakerecipe').AndReturn("Alls good")
+        self.client.execute_command('cmdtest fakecookbook').AndReturn("Alls good")
         self.m.ReplayAll()
-        obs = self.client.run_test("fakerecipe")
+        obs = self.client.run_test("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()

@@ -19,7 +19,7 @@ import mock
 from chef_validator.common.exception import AuthorizationFailure
 from chef_validator.common.exception import CookbookInstallException
 from chef_validator.common.exception import OpenstackException
-from chef_validator.common.exception import RecipeDeploymentException
+from chef_validator.common.exception import CookbookDeploymentException
 from chef_validator.common.exception import MalformedRequestBody
 from chef_validator.common.exception import HTTPExceptionDisguise
 from chef_validator.common.exception import CookbookSyntaxException
@@ -83,18 +83,18 @@ class OpenstackExceptionTestCase(ValidatorTestCase):
         self.m.ResetAll()
 
 
-class RecipeDeploymentExceptionTestCase(ValidatorTestCase):
-    """ Tests for class RecipeDeploymentException """
+class CookbookDeploymentExceptionTestCase(ValidatorTestCase):
+    """ Tests for class CookbookDeploymentException """
 
     def setUp(self):
-        """ Create a RecipeDeploymentException instance """
-        super(RecipeDeploymentExceptionTestCase, self).setUp()
-        self.item = RecipeDeploymentException()
+        """ Create a CookbookDeploymentException instance """
+        super(CookbookDeploymentExceptionTestCase, self).setUp()
+        self.item = CookbookDeploymentException()
 
 
     def tearDown(self):
-        """ Cleanup the RecipeDeploymentException instance """
-        super(RecipeDeploymentExceptionTestCase, self).tearDown()
+        """ Cleanup the CookbookDeploymentException instance """
+        super(CookbookDeploymentExceptionTestCase, self).tearDown()
         self.m.UnsetStubs()
         self.m.ResetAll()
 

@@ -15,7 +15,7 @@
 from oslo_log import log as logging
 from oslo_config import cfg
 
-from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, RecipeDeploymentException, \
+from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, CookbookDeploymentException, \
     CookbookInstallException
 from chef_validator.common.i18n import _LW
 
@@ -73,45 +73,45 @@ class ChefClientSSH(object):
         self._password = passw
         self.ssh = None
 
-    def recipe_deploy_test(self, recipe):
-        """ Try to deploy the given recipe through an serial connection
-        :param recipe: recipe to deploy
+    def cookbook_deploy_test(self, cookbook):
+        """ Try to deploy the given cookbook through an serial connection
+        :param cookbook: cookbook to deploy
         :return: dict message with results
         """
-        LOG.debug("Sending recipe to %s" % self._ip)
+        LOG.debug("Sending cookbook to %s" % self._ip)
         b_success = True
         msg = {}
         self.connect_session()
-        msg['install'] = self.run_install(recipe)
+        msg['install'] = self.run_install(cookbook)
         b_success &= msg['install']['success']
-        msg['test'] = self.run_test(recipe)
+        msg['test'] = self.run_test(cookbook)
         b_success &= msg['test']['success']
-        msg['deploy'] = self.run_deploy(recipe)
+        msg['deploy'] = self.run_deploy(cookbook)
         b_success &= msg['deploy']['success']
 
         # check execution output
         if b_success:
             msg['result'] = {
                 'success': True,
-                'result': "Recipe %s successfully deployed\n" % recipe
+                'result': "Cookbook %s successfully deployed\n" % cookbook
             }
         else:
             msg['result'] = {
                 'success': False,
-                'result': "Error deploying recipe {}\n".format(recipe)
+                'result': "Error deploying cookbook {}\n".format(cookbook)
             }
             LOG.error(_LW(msg))
         self.disconnect_session()
         return msg
 
-    def run_deploy(self, recipe):
-        """ Run recipe deployment
-        :param recipe: recipe to deploy
+    def run_deploy(self, cookbook):
+        """ Run cookbook deployment
+        :param cookbook: cookbook to deploy
         :return msg: dictionary with results and state
         """
         try:
             # inject custom solo.json file
-            json_cont = CONF.clients_chef.cmd_config.format(recipe)
+            json_cont = CONF.clients_chef.cmd_config.format(cookbook)
             cmd_inject = CONF.clients_chef.cmd_inject.format(json_cont)
             self.execute_command(cmd_inject)
             # launch execution
@@ -125,17 +125,17 @@ class ChefClientSSH(object):
                 msg['success'] = False
         except Exception as e:
             self.disconnect_session()
-            LOG.error(_LW("Recipe deployment exception %s" % e))
-            raise RecipeDeploymentException(recipe=recipe)
+            LOG.error(_LW("Cookbook deployment exception %s" % e))
+            raise CookbookDeploymentException(cookbook=cookbook)
         return msg
 
-    def run_test(self, recipe):
+    def run_test(self, cookbook):
         """ Test cookbook syntax
-        :param recipe: recipe to test
+        :param cookbook: cookbook to test
         :return msg: dictionary with results and state
         """
         try:
-            cmd_test = CONF.clients_chef.cmd_test.format(recipe)
+            cmd_test = CONF.clients_chef.cmd_test.format(cookbook)
             resp_test = self.execute_command(cmd_test)
             msg = {
                 'success': True,
@@ -147,16 +147,16 @@ class ChefClientSSH(object):
         except Exception as e:
             self.disconnect_session()
             LOG.error(_LW("Cookbook syntax exception %s" % e))
-            raise CookbookSyntaxException(recipe=recipe)
+            raise CookbookSyntaxException(cookbook=cookbook)
         return msg
 
-    def run_install(self, recipe):
+    def run_install(self, cookbook):
         """Run download and install command
-        :param recipe: recipe to process
+        :param cookbook: cookbook to process
         :return msg: operation result
         """
         try:
-            cmd_install = CONF.clients_chef.cmd_install.format(recipe)
+            cmd_install = CONF.clients_chef.cmd_install.format(cookbook)
             resp_install = self.execute_command(cmd_install)
             msg = {
                 'success': True,
@@ -168,7 +168,7 @@ class ChefClientSSH(object):
         except Exception as e:
             self.disconnect_session()
             LOG.error(_LW("Chef install exception %s" % e))
-            raise CookbookInstallException(recipe=recipe)
+            raise CookbookInstallException(cookbook=cookbook)
         return msg
 
     def connect_session(self):

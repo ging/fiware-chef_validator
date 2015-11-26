@@ -30,13 +30,13 @@ class ValidateEngineTestCase(ValidatorTestCase):
         self.item = ValidateEngine()
 
 
-    def test_validate_recipe(self):
-        """ Tests for method validate_recipe """
+    def test_validate_cookbook(self):
+        """ Tests for method validate_cookbook """
         self.item.external = mock.MagicMock()
         input = "MyInput"
         expected = "OK"
         self.item.external.return_value = "OK"
-        observed = self.item.validate_recipe(input)
+        observed = self.item.validate_cookbook(input)
         self.assertEqual(expected, observed)
 
     def tearDown(self):

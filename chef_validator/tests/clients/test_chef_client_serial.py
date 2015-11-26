@@ -30,13 +30,13 @@ class ChefClientSerialTestCase(ValidatorTestCase):
         self.item = ChefClientSerial()
 
 
-    def test_recipe_deploy_test(self):
-        """ Tests for method recipe_deploy_test """
+    def test_cookbook_deploy_test(self):
+        """ Tests for method cookbook_deploy_test """
         self.item.external = mock.MagicMock()
         input = "MyInput"
         expected = "OK"
         self.item.external.return_value = "OK"
-        observed = self.item.recipe_deploy_test(input)
+        observed = self.item.cookbook_deploy_test(input)
         self.assertEqual(expected, observed)
 
     def test_run_deploy(self):

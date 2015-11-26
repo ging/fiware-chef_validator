@@ -21,7 +21,7 @@ FI-Ware Chef Validator
 Description
 -----------
 
-An OpenStack validator for the deployment of chef recipes implemented as
+An OpenStack validator for the deployment of chef cookbooks implemented as
 a service with an OpenStack-native Rest API
 
 Features Implemented
@@ -87,25 +87,25 @@ successful completion. The dependency list reads as follows:
 Validation Process
 ------------------
 
-The recipe validation process consists on the following steps:
+The cookbook validation process consists on the following steps:
 
 1. The **Client** sends a POST request to the service API, containing:
-    - The name of the recipe to be tested
-    - The *Github* repository from which to obtain the recipe
+    - The name of the cookbook to be tested
+    - The *Github* repository from which to obtain the cookbook
     - The virtual machine name for deployment
 
 2. The **Server** receives the request and takes the following steps:
     - Checks the user permissions to take the next steps by validating against Keystone
-    - Downloads the needed *recipe*
+    - Downloads the needed *cookbook*
     - Deploys the selected *Virtual Machine* image
-    - Instructs the **Chef Server** to deploy the *recipe* in the given *Virtual Machine*
+    - Instructs the **Chef Server** to deploy the *cookbook* in the given *Virtual Machine*
     - Responds to the **Client** request informing of the status of the validation process
 
 Example Client
 ---------------
 An example client is provided in cmd/chef-validator-client. It can be run with the following command:
 
-    chef_validator/cmd/chef-validator-client.py --validator_url=${url_of_the_validator_api} --username=${username} --password=${password} --image=${author/image_name} --recipe=${recipe_name}
+    chef_validator/cmd/chef-validator-client.py --validator_url=${url_of_the_validator_api} --username=${username} --password=${password} --image=${author/image_name} --cookbook=${cookbook_name}
 
 Chef Image generation
 ---------------------
