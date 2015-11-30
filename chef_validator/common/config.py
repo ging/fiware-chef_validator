@@ -25,7 +25,7 @@ from oslo_log import log as logging
 
 from chef_validator.common import wsgi
 from chef_validator.common.i18n import _
-from chef_validator import version
+from chef_validator.tests.unit import version
 
 socket_opts = [
     cfg.IntOpt('tcp_keepidle',
