@@ -1,4 +1,5 @@
 {
   "cookbook": "memcached",
-  "image": "chef_client"
+  "image": "chef_client",
+  "recipe": "default"
 }
