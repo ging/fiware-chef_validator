@@ -16,11 +16,14 @@
 from __future__ import unicode_literals
 
 import mock
+from oslo_config import cfg
 from chef_validator.clients.glance_client import AmbiguousNameException
 from chef_validator.clients.glance_client import GlanceClient
 
 from chef_validator.tests.base import ValidatorTestCase
 
+CONF = cfg.CONF
+CONF.import_group('clients_glance', 'chef_validator.clients.glance_client')
 
 class AmbiguousNameExceptionTestCase(ValidatorTestCase):
     """ Tests for class AmbiguousNameException """
@@ -44,43 +47,42 @@ class GlanceClientTestCase(ValidatorTestCase):
     def setUp(self):
         """ Create a GlanceClient instance """
         super(GlanceClientTestCase, self).setUp()
-        self.item = GlanceClient(None)
+        keystone_client = mock.MagicMock()
+        CONF.set_override('endpoint', "1234", group='clients_glance')
+        self.client = GlanceClient(keystone_client)
+        self.client._client = mock.MagicMock()
 
 
     def test_list(self):
         """ Tests for method list """
-        self.item.external = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.list(input)
-        self.assertEqual(expected, observed)
+        self.client._client.images.list = mock.MagicMock()
+        self.client._client.images.list.return_value = (mock.MagicMock() for n in range(2))
+        observed = tuple(self.client.list())
+        expected = ("1","2")
+        self.assertEqual(len(expected), len(observed))
 
     def test_get_by_name(self):
         """ Tests for method get_by_name """
-        self.item.external = mock.MagicMock()
         input = "MyInput"
-        expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.get_by_name(input)
+        expected = None
+        observed = self.client.get_by_name(input)
         self.assertEqual(expected, observed)
 
     def test_getById(self):
         """ Tests for method getById """
-        self.item.external = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.getById(input)
-        self.assertEqual(expected, observed)
+        self.client._client.images.get.return_value = mock.MagicMock()
+        expected = {"id": "myid", "name": "myname"}
+        observed = self.client.getById("1234")
+        self.assertEqual(len(expected.items()), len(observed.items()))
 
     def test_create_glance_client(self):
         """ Tests for method create_glance_client """
-        self.item.keystone_client = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
-        self.item.keystone_client.service_catalog.url_for.return_value = "OK"
-        observed = self.item.create_glance_client(input)
+        keystone_client = mock.MagicMock()
+        keystone_client.auth_token = "1234"
+        keystone_client.service_catalog = mock.MagicMock()
+        self.client._client = mock.MagicMock()
+        observed = self.client.create_glance_client(keystone_client)
+        expected = None
         self.assertEqual(expected, observed)
 
     def tearDown(self):
