@@ -14,6 +14,7 @@
 #  under the License.
 """ Tests for chef_validator.common.utils """
 from __future__ import unicode_literals
+import json
 
 import mock
 from chef_validator.common.utils import JSONDeserializer
@@ -33,18 +34,18 @@ class JSONDeserializerTestCase(ValidatorTestCase):
 
     def test_dispatch(self):
         """ Tests for method dispatch """
-        self.item.external = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.dispatch(input)
+        input = mock.MagicMock()
+        input.body = '{"MyInput": "mydata"}'
+        expected = {u'body': {u'MyInput': u'mydata'}}
+        observed = self.item.dispatch(input, action="default")
         self.assertEqual(expected, observed)
 
     def test_deserialize(self):
         """ Tests for method deserialize """
         self.item.external = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
+        input = mock.MagicMock()
+        input.body = '{"MyInput": "mydata"}'
+        expected = {u'body': {u'MyInput': u'mydata'}}
         self.item.external.return_value = "OK"
         observed = self.item.deserialize(input)
         self.assertEqual(expected, observed)
@@ -52,10 +53,11 @@ class JSONDeserializerTestCase(ValidatorTestCase):
     def test_default(self):
         """ Tests for method default """
         self.item.external = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
+        request = mock.MagicMock()
+        request.body = '{"MyInput": "mydata"}'
+        expected = {u'body': {u'MyInput': u'mydata'}}
         self.item.external.return_value = "OK"
-        observed = self.item.default(input)
+        observed = self.item.default(request)
         self.assertEqual(expected, observed)
 
     def tearDown(self):
@@ -76,11 +78,12 @@ class JSONSerializerTestCase(ValidatorTestCase):
 
     def test_default(self):
         """ Tests for method default """
-        self.item.external = mock.MagicMock()
         input = "MyInput"
-        expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.default(input)
+        response = mock.MagicMock()
+        result = input
+        expected = "\""+input+"\""
+        self.item.default(response, result)
+        observed = response.body
         self.assertEqual(expected, observed)
 
     def tearDown(self):

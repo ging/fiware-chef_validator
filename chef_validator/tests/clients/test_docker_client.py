@@ -33,8 +33,8 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         """ Create a docker client"""
         super(DockerClientTestCase, self).setUp()
         self.client = DockerClient()
-        CONF.set_override('cmd_test', "cmdtest {}", group='clients_chef')
-        CONF.set_override('cmd_install', "cmdinstall {}", group='clients_chef')
+        CONF.set_override('cmd_test', "knife cookbook test {cookbook_name}::{recipe_name}", group='clients_chef')
+        CONF.set_override('cmd_install', " knife cookbook site install {cookbook_name}::{recipe_name}", group='clients_chef')
         CONF.set_override('cmd_inject', "cmdinject {}", group='clients_chef')
         CONF.set_override('cmd_launch', "cmdlaunch {}", group='clients_chef')
 
@@ -61,30 +61,32 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         self.m.VerifyAll()
 
     def test_run_deploy(self):
+        self.client.remove_container = mock.MagicMock()
         self.client.execute_command = mock.MagicMock()
         self.client.execute_command.return_value = "Alls good"
-        self.client.run_deploy("mycookbook")
-        obs = self.client.run_test("fakecookbook")
+        obs = self.client.run_deploy("mycookbook", "myrecipe")
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
 
 
     def test_run_install(self):
-        self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdinstall fakecookbook').AndReturn("Alls good")
+        self.client.execute_command = mock.MagicMock()
+        self.client.execute_command.return_value = "Alls good"
         self.m.ReplayAll()
-        obs = self.client.run_install("fakecookbook")
+        test_input = "testing"
+        cookbook = recipe = test_input
+        obs = self.client.run_install(cookbook, recipe)
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()
 
     def test_run_test(self):
-        self.client.execute_command = self.m.CreateMockAnything()
-        self.client.container = "1234"
-        self.client.execute_command('cmdtest fakecookbook').AndReturn("Alls good")
-        self.m.ReplayAll()
-        obs = self.client.run_test("fakecookbook")
+        self.client.execute_command = mock.MagicMock()
+        self.client.execute_command.return_value = "Alls good"
+        test_input = "testing"
+        cookbook = recipe = test_input
+        obs = self.client.run_test(cookbook, recipe)
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()
@@ -97,7 +99,7 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         self.client.dc.exec_start("validcmd").AndReturn("OK")
         self.m.ReplayAll()
         obs = self.client.execute_command("mycommand")
-        self.assertEqual("OK",obs)
+        self.assertEqual("OK", obs)
         self.m.VerifyAll()
 
     def tearDown(self):

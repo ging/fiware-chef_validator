@@ -16,6 +16,7 @@
 from __future__ import unicode_literals
 
 import mock
+import webob
 from chef_validator.api.middleware.ssl import SSLMiddleware
 
 from chef_validator.tests.base import ValidatorTestCase
@@ -27,15 +28,15 @@ class SSLMiddlewareTestCase(ValidatorTestCase):
     def setUp(self):
         """ Create a SSLMiddleware instance """
         super(SSLMiddlewareTestCase, self).setUp()
-        self.item = SSLMiddleware()
+        self.item = SSLMiddleware(None)
 
 
     def test_process_request(self):
         """ Tests for method process_request """
         self.item.external = mock.MagicMock()
-        input = "MyInput"
-        expected = "OK"
-        self.item.external.return_value = "OK"
+        input = webob.Request.blank('/test', headers={})
+        expected = None
+        self.item.external.return_value = None
         observed = self.item.process_request(input)
         self.assertEqual(expected, observed)
 

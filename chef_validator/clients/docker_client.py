@@ -68,7 +68,7 @@ class DockerClient(object):
         b_success &= msg['install']['success']
         msg['test'] = self.run_test(cookbook, recipe)
         b_success &= msg['test']['success']
-        msg['deploy'] = self.run_deploy(cookbook)
+        msg['deploy'] = self.run_deploy(cookbook, recipe)
         b_success &= msg['deploy']['success']
 
         # check execution output
@@ -86,9 +86,10 @@ class DockerClient(object):
         self.remove_container()
         return msg
 
-    def run_deploy(self, cookbook):
+    def run_deploy(self, cookbook, recipe):
         """ Run cookbook deployment
         :param cookbook: cookbook to deploy
+        :param recipe: recipe to deploy
         :return msg: dictionary with results and state
         """
         try:
@@ -149,8 +150,8 @@ class DockerClient(object):
                     msg['success'] = False
             LOG.debug(_("Install result: %s") % resp_install)
         except Exception as e:
-            self.remove_container(self.container)
             LOG.error(_LW("Chef install exception: %s" % e))
+            self.remove_container(self.container)
             raise CookbookInstallException(cookbook=cookbook)
         return msg
 

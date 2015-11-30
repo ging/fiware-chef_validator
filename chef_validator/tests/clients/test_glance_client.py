@@ -44,7 +44,7 @@ class GlanceClientTestCase(ValidatorTestCase):
     def setUp(self):
         """ Create a GlanceClient instance """
         super(GlanceClientTestCase, self).setUp()
-        self.item = GlanceClient()
+        self.item = GlanceClient(None)
 
 
     def test_list(self):
@@ -76,10 +76,10 @@ class GlanceClientTestCase(ValidatorTestCase):
 
     def test_create_glance_client(self):
         """ Tests for method create_glance_client """
-        self.item.external = mock.MagicMock()
+        self.item.keystone_client = mock.MagicMock()
         input = "MyInput"
         expected = "OK"
-        self.item.external.return_value = "OK"
+        self.item.keystone_client.service_catalog.url_for.return_value = "OK"
         observed = self.item.create_glance_client(input)
         self.assertEqual(expected, observed)
 
