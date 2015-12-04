@@ -20,8 +20,9 @@ FI-Ware Chef Validator
 	
 Description
 -----------
+This project is part of [FIWARE] (http://fiware.org).
 
-An OpenStack validator for the deployment of chef cookbooks implemented as
+A FIWARE validator for the deployment of chef cookbooks implemented as
 a service with an OpenStack-native Rest API
 
 Features Implemented

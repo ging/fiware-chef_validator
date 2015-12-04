@@ -98,7 +98,7 @@ def dump_docker_image():
 
 
 def upload_glance_image_from_file(gc):
-    "upload file image to glance"
+    """upload file image to glance"""
     LOG.debug("Generating Glance Image")
     with open("/tmp/temp.tar", 'rb') as image_tar:
         gc.images.create(

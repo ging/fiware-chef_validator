@@ -42,7 +42,7 @@ As an alternative, if you have access to a docker server, you can pull and run t
 ::
 
     docker pull pmverdugo/fi-ware-chef_validator:dev
-    docker run pmverdugo/fi-ware-chef_validator:latest
+    docker run pmverdugo/fi-ware-chef_validator:dev
 
 
 Sanity Check Procedures
