@@ -1,0 +1,35 @@
+DEPENDENCIES
+  apt
+  build-essential
+  bork
+    path: .
+    metadata: true
+  git
+  poise-python
+
+GRAPH
+  apt (2.9.1)
+  build-essential (2.2.4)
+  chef_handler (1.2.0)
+  dmg (2.3.0)
+  bork (0.0.1)
+    apt (>= 0.0.0)
+    build-essential (>= 0.0.0)
+    git (>= 0.0.0)
+    poise-python (>= 0.0.0)
+  git (4.3.4)
+    build-essential (>= 0.0.0)
+    dmg (>= 0.0.0)
+    windows (>= 0.0.0)
+    yum-epel (>= 0.0.0)
+  poise (2.4.0)
+  poise-languages (1.2.0)
+    poise (~> 2.3)
+  poise-python (1.1.1)
+    poise (~> 2.0)
+    poise-languages (~> 1.2)
+  windows (1.38.2)
+    chef_handler (>= 0.0.0)
+  yum (3.8.1)
+  yum-epel (0.6.3)
+    yum (~> 3.2)

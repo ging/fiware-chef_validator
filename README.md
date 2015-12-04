@@ -27,7 +27,7 @@ a service with an OpenStack-native Rest API
 
 Features Implemented
 --------------------
-A RESTful API for validation
+A RESTful API for chef cookbook validation
 
 Installation Manual
 -------------------
@@ -80,10 +80,10 @@ The system deployment depends on several external services for
 successful completion. The dependency list reads as follows:
 
 - **OpenStack Keystone server**: Used for issuing user tokens for several OpenStack services
+- **Docker Server**: Used for managing the chef server image
 - **OpenStack Glance server**: Used for listing the available virtual machine images
 - **OpenStack Nova server**: Used for deploying the selected virtual machine
-- **Docker Server**: Used for managing the chef server image
-- **Chef server**: Used to coordinate chef activities
+
 
 Validation Process
 ------------------
@@ -92,7 +92,7 @@ The cookbook validation process consists on the following steps:
 
 1. The **Client** sends a POST request to the service API, containing:
     - The name of the cookbook to be tested
-    - The *Github* repository from which to obtain the cookbook
+    - The *chef supermarket* repository from which to obtain the cookbook
     - The virtual machine name for deployment
 
 2. The **Server** receives the request and takes the following steps:
