@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -16,7 +17,6 @@
 Chef Validator API Server. An OpenStack ReST API to Validate Chef Cookbooks.
 """
 
-from __future__ import unicode_literals
 import os
 import sys
 
@@ -27,7 +27,6 @@ from oslo_log import log as logging
 from chef_validator.common.i18n import _LI
 from chef_validator.common import config
 from chef_validator.common import wsgi
-
 
 # If ../chef_validator/__init__.py exists, add ../ to Python search path,
 # so that it will override what happens to be installed in
@@ -41,7 +40,9 @@ i18n.enable_lazy()
 LOG = logging.getLogger()
 CONF = config.CONF
 
-if __name__ == '__main__':
+
+def main():
+    """ Launch validator API """
     try:
         logging.register_options(CONF)
         config.parse_args()
@@ -57,3 +58,6 @@ if __name__ == '__main__':
     except RuntimeError as e:
         msg = six.text_type(e)
         sys.exit("ERROR: %s" % msg)
+
+if __name__ == '__main__':
+    main()

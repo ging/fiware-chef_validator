@@ -17,7 +17,6 @@ from oslo_log import log as logging
 from oslo_config import cfg
 from chef_validator.common import exception
 from chef_validator.common.i18n import _LI, _
-from chef_validator.clients.chef_client_serial import ChefClientSerial
 from chef_validator.clients.chef_client_ssh import ChefClientSSH
 from chef_validator.clients.docker_client import DockerClient
 from chef_validator.clients.nova_client import NovaClient
