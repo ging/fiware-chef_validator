@@ -29,6 +29,7 @@ opts = [
     cfg.StrOpt('url'),
     cfg.StrOpt('image'),
 ]
+
 CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_docker")
 LOG = logging.getLogger()

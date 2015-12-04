@@ -4,7 +4,7 @@ FI-Ware Chef Validator
 ======================
 
 An OpenStack validator for the deployment of chef cookbooks implemented as
-a service with an OpenStack-native Rest API
+a service with an OpenStack-native REST API
 
 Getting Started
 ---------------
@@ -32,7 +32,7 @@ The API definition can be found at http://docs.chefvalidatorapi.apiary.io/#
 External Dependencies
 ---------------------
 
-The system deployment depends on several external services for successful completion.
+The system deployment depends on several external services for successful task completion.
 The dependency list reads as follows:
 
 - OpenStack Keystone server:
@@ -44,9 +44,6 @@ The dependency list reads as follows:
 - OpenStack Nova server:
     Used for deploying the selected virtual machine
 
-- Chef server:
-    Used to coordinate chef activities
-
 Validation Process
 ------------------
 
@@ -54,9 +51,9 @@ The cookbook validation process consists on the following steps:
 
 1. The **Client** sends a POST request to the service API, containing:
     - The name of the cookbook to be tested
-    - The *Github* repository from which to obtain the cookbook
+    - The *chef supermarket* repository from which to obtain the cookbook
     - The virtual machine name for deployment
-2. The **Server** recieves the request and takes the following steps:
+2. The **Server** receives the request and takes the following steps:
     - Checks the user permissions to take the next steps by validating against Keystone
     - Downloads the needed *cookbook*
     - Deploys the selected *Virtual Machine* image

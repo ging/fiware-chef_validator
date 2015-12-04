@@ -93,7 +93,7 @@ bind_port = 4042
 flavor=standalone
 
 [keystone_authtoken]
-auth_uri = http://172.17.42.1:5000/v2.0
+auth_uri = http://127.0.0.1:5000/v2.0
 
 [clients_chef]
 cmd_install = knife cookbook site install {cookbook_name}::{recipe_name}
@@ -103,4 +103,10 @@ cmd_test    = knife cookbook test {cookbook_name}::{recipe_name}
 cmd_launch  = chef-solo –c /etc/chef/solo.rb -j /etc/chef/solo.json
 
 [clients_docker]
-url = tcp://172.17.42.1:2375
+url = tcp://127.0.0.1:2375
+
+[clients_glance]
+endpoint = http://127.0.0.1:9292/v2
+
+[clients_nova]
+endpoint = http://127.0.0.1:8774/v2
