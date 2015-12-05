@@ -35,15 +35,6 @@ class SysLogHandlersTestCase(tb.ValidatorTestCase):
             facility=self.facility)
         self.logger.binary_name = 'Foo_application'
 
-    def test_rfc_format(self):
-        """Ensure syslog msg contains APP-NAME for RFC wrapped handler."""
-        logrecord = logging.LogRecord('name', 'WARN', '/tmp', 1,
-                                      'Message', None, None)
-        expected = logging.LogRecord('name', 'WARN', '/tmp', 1,
-                                     'Foo_application Message', None, None)
-        self.assertEqual(self.rfclogger.format(logrecord),
-                         expected.getMessage())
-
     def test_standard_format(self):
         """Ensure syslog msg isn't modified for standard handler."""
         logrecord = logging.LogRecord('name', 'WARN', '/tmp', 1,

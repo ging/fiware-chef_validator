@@ -25,9 +25,10 @@ CONF = cfg.CONF
 
 class ValidateEngine(object):
     """Engine for validations"""
+    def __init__(self):
+        self.d = DockerClient()
 
-    @staticmethod
-    def validate_cookbook(cookbook, recipe, image, request):
+    def validate_cookbook(self, cookbook, recipe, image, request):
         """
         Cookbook validation
         :param recipe:
@@ -42,8 +43,7 @@ class ValidateEngine(object):
                 and len(CONF.clients_docker.url) > 1:
 
             # use direct docker connection, fast and simple
-            d = DockerClient()
-            res = d.cookbook_deployment_test(cookbook, recipe, image)
+            res = self.d.cookbook_deployment_test(cookbook, recipe, image)
         else:
             # nova client connection
             n = NovaClient(request.context)

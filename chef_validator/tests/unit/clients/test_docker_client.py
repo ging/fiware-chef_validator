@@ -34,11 +34,11 @@ class DockerClientTestCase(tb.ValidatorTestCase):
         self.client = DockerClient()
         CONF.set_override(
             'cmd_test',
-            "knife cookbook test {cookbook_name}::{recipe_name}",
+            "knife cookbook test {cookbook_name}",
             group='clients_chef')
         CONF.set_override(
             'cmd_install',
-            " knife cookbook site install {cookbook_name}::{recipe_name}",
+            " knife cookbook site install {cookbook_name}",
             group='clients_chef')
         CONF.set_override('cmd_inject', "cmdinject {}", group='clients_chef')
         CONF.set_override('cmd_launch', "cmdlaunch {}", group='clients_chef')
@@ -50,10 +50,6 @@ class DockerClientTestCase(tb.ValidatorTestCase):
 
     def test_run_container(self):
         """Test container deployment"""
-        self.assertRaises(
-            DockerContainerException,
-            self.client.run_container,
-            "fakeimage")
         self.client.dc = mock.MagicMock()
         self.client.run_container('validimage')
         self.client.dc.create_container.assert_called_once_with(
@@ -83,22 +79,21 @@ class DockerClientTestCase(tb.ValidatorTestCase):
 
     def test_run_install(self):
         self.client.container = "1234"
+        self.client.remove_container = mock.MagicMock()
         self.client.execute_command = mock.MagicMock()
         self.client.execute_command.return_value = "Alls good"
-        self.m.ReplayAll()
-        test_input = "testing"
-        cookbook = recipe = test_input
-        obs = self.client.run_install(cookbook, recipe)
+        cookbook = "testing"
+        obs = self.client.run_install(cookbook)
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
-        self.m.VerifyAll()
 
     def test_run_test(self):
+        self.client.remove_container = mock.MagicMock()
         self.client.execute_command = mock.MagicMock()
         self.client.execute_command.return_value = "Alls good"
         test_input = "testing"
-        cookbook = recipe = test_input
-        obs = self.client.run_test(cookbook, recipe)
+        cookbook = test_input
+        obs = self.client.run_test(cookbook)
         expected = "{'response': u'Alls good', 'success': True}"
         self.assertEqual(expected, str(obs))
         self.m.VerifyAll()

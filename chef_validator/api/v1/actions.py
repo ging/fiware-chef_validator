@@ -31,9 +31,10 @@ class ValidateController(object):
     Validate Controller Object
     Implements Application logic
     """
+    def __init__(self):
+        self.ve = ValidateEngine()
 
-    @staticmethod
-    def validate(request, body):
+    def validate(self, request, body):
         """Validate the given cookbook
         :param request: request context
         :param body: a json with deployment parameters
@@ -56,7 +57,7 @@ class ValidateController(object):
             _LI('Processing Request for cookbook {cookbook}, recipe {recipe}, '
                 'image {image}').format(cookbook=cookbook, recipe=recipe,
                                         image=image))
-        res = ValidateEngine().validate_cookbook(
+        res = self.ve.validate_cookbook(
             cookbook, recipe, image, request
         )
         return res

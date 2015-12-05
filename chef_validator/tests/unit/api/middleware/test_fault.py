@@ -36,7 +36,6 @@ class ErrorWithNewline(webob.exc.HTTPBadRequest):
 class FaultMiddlewareTest(ValidatorTestCase):
     def setUp(self):
         super(FaultMiddlewareTest, self).setUp()
-        log.register_options(cfg.CONF)
 
     def test_disguised_http_exception_with_newline(self):
         wrapper = fault.FaultWrapper(None)

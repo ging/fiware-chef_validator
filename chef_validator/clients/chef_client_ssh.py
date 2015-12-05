@@ -75,7 +75,7 @@ class ChefClientSSH(object):
         self._ip = ip
         self._username = user
         self._password = passw
-        self.ssh = None
+        self.ssh = SSHClient()
 
     def cookbook_deploy_test(self, cookbook):
         """Try to deploy the given cookbook through an serial connection
@@ -180,7 +180,6 @@ class ChefClientSSH(object):
         Connect to a session with the internal parameters
         :return:
         """
-        self.ssh = SSHClient()
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
         try:
             self.ssh.connect(

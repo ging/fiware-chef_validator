@@ -13,9 +13,8 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 """Tests for chef_validator.engine.validate """
-from __future__ import unicode_literals
-
-import mock
+from mock import mock
+import docker.errors
 
 from chef_validator.engine.validate import ValidateEngine
 from chef_validator.tests.unit.base import ValidatorTestCase
@@ -27,21 +26,22 @@ class ValidateEngineTestCase(ValidatorTestCase):
     def setUp(self):
         """Create a ValidateEngine instance """
         super(ValidateEngineTestCase, self).setUp()
-        self.item = ValidateEngine()
+        self.validate = ValidateEngine()
 
     def test_validate_cookbook(self):
         """Tests for method validate_cookbook """
-        self.item.external = mock.MagicMock()
+        self.validate.d.cookbook_deployment_test = mock.MagicMock(
+            return_value="OK")
         test_input = "MyInput"
         cookbook = recipe = image = request = test_input
         expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.validate_cookbook(
-            cookbook,
-            recipe,
-            image,
-            request)
-        self.assertEqual(expected, observed)
+        observed = self.validate.validate_cookbook(
+                              cookbook,
+                              recipe,
+                              image,
+                              request)
+        self.assertEqual(observed, expected)
+
 
     def tearDown(self):
         """Cleanup the ValidateEngine instance """

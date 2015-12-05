@@ -39,7 +39,11 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     def test_connect_session(self):
         """Test client creation"""
         self.client.ssh = mock.MagicMock()
-        self.assertRaises(SshConnectException, self.client.connect_session)
+        self.client.ssh.connect.return_value = "OK"
+        expected = None
+        observed = self.client.connect_session()
+        self.assertEqual(expected, observed)
+
 
     def test_disconnect_session(self):
         """Test stopping and removing a container"""

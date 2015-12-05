@@ -13,31 +13,38 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 """Tests for chef_validator.api.v1.actions """
-from __future__ import unicode_literals
-import mock
+from mock import mock
+from oslo_config import cfg
+
 from chef_validator.api.v1.actions import ValidateController
 from chef_validator.tests.unit.base import ValidatorTestCase
 
 
-class ValidateControllerTestCase(ValidatorTestCase):
+CONF = cfg.CONF
+CONF.import_group('clients_docker', 'chef_validator.clients.docker_client')
+
+
+class ActionControllerTestCase(ValidatorTestCase):
     """Tests for class ValidateController """
 
     def setUp(self):
         """Create a ValidateController instance """
-        super(ValidateControllerTestCase, self).setUp()
-        self.item = ValidateController()
+        super(ActionControllerTestCase, self).setUp()
+        CONF.set_override('url', "url", group='clients_docker')
+        self.action = ValidateController()
 
     def test_validate(self):
         """Tests for method validate """
-        self.item.external = mock.MagicMock()
-        input = "MyInput"
+        self.action.ve.validate_cookbook = mock.MagicMock(return_value="OK")
+        req = "MyInput"
+        body = {"cookbook": "fakecb", "image": "fakeimg"}
         expected = "OK"
-        self.item.external.return_value = "OK"
-        observed = self.item.validate(input)
+        observed = self.action.validate(req, body)
         self.assertEqual(expected, observed)
+
 
     def tearDown(self):
         """Cleanup the ValidateController instance """
-        super(ValidateControllerTestCase, self).tearDown()
+        super(ActionControllerTestCase, self).tearDown()
         self.m.UnsetStubs()
         self.m.ResetAll()

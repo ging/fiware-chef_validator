@@ -27,6 +27,7 @@ keystonemiddleware == 2.1.0
 # Openstack Client APIs
 python-novaclient == 2.26.0
 python-glanceclient == 1.2.0
+python-keystoneclient
 
 # Chef Image Generation
 docker-py == 1.3.1
