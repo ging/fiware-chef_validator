@@ -12,11 +12,10 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from __future__ import unicode_literals
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_config import cfg
 from chef_validator.common import exception
-from chef_validator.common.i18n import _LI, _
+from chef_validator.common.i18n import _LI
 from chef_validator.clients.chef_client_ssh import ChefClientSSH
 from chef_validator.clients.docker_client import DockerClient
 from chef_validator.clients.nova_client import NovaClient
@@ -25,12 +24,13 @@ CONF = cfg.CONF
 
 
 class ValidateEngine(object):
-    "Engine for validations"
+    """Engine for validations"""
 
     @staticmethod
     def validate_cookbook(cookbook, recipe, image, request):
         """
         Cookbook validation
+        :param recipe:
         :param image: name of the image to deploy
         :param cookbook: name of the cookbook to validate
         :param request: request context
@@ -57,20 +57,14 @@ class ValidateEngine(object):
 
             # if the machine already exists, destroy it
             if n.get_machine(machine):
-                LOG.info(_LI("Server %s already exists, deleting" % machine))
+                LOG.info(_LI("Server %s already exists, deleting") % machine)
                 n.delete_machine(machine)
 
             # deploy machine
             n.deploy_machine(machine, image=image['name'])
             ip = n.get_ip()
 
-            # deploy the cookbook
-            sercon = n.get_serial()
-            if len(sercon) > 0:
-                # preferred serial connection
-                c = ChefClientSerial(sercon)
-            else:
-                # generic ssh connection
-                c = ChefClientSSH(ip)
+            # generic ssh connection
+            c = ChefClientSSH(ip)
             res = c.cookbook_deploy_test(cookbook)
         return res

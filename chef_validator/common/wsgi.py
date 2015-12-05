@@ -15,7 +15,6 @@
 import abc
 import time
 import errno
-
 import routes.middleware
 from paste import deploy
 import routes
@@ -23,19 +22,16 @@ import six
 import webob.dec
 import webob.exc
 import eventlet
-
 from chef_validator.common.utils import JSONSerializer, JSONDeserializer
 
 eventlet.patcher.monkey_patch(all=False, socket=True)
 import eventlet.wsgi
 from eventlet.green import socket
-
 from oslo_service import service
 from oslo_service import sslutils
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_utils import importutils
 from oslo_config import cfg
-
 from chef_validator.common import exception
 from chef_validator.common.i18n import _, _LW
 
@@ -82,7 +78,7 @@ class Service(service.Service):
             raise RuntimeError(_(
                 "Could not bind to %(host)s:%(port)s "
                 "after trying for 30 seconds") %
-                               {'host': host, 'port': port})
+                {'host': host, 'port': port})
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # sockets can hang around forever without keepalive
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
@@ -155,12 +151,15 @@ class Middleware(object):
         If this returns None, the next application down the stack will be
         executed. If it returns a response then that response will be returned
         and execution will stop here.
+        :param req:
         """
         return None
 
     @staticmethod
     def process_response(response):
-        """Do whatever you'd like to the response."""
+        """Do whatever you'd like to the response.
+        :param response:
+        """
         return response
 
     @webob.dec.wsgify
@@ -184,10 +183,11 @@ class Request(webob.Request):
 
         Based on the query extension then the Accept header.
         Defaults to default_accept_type if we don't find a preference
+        :param supported_content_types:
 
         """
-        supported_content_types = (supported_content_types
-                                   or self.default_accept_types)
+        supported_content_types = (supported_content_types or
+                                   self.default_accept_types)
 
         parts = self.path.rsplit('.', 1)
         if len(parts) > 1:
@@ -202,14 +202,15 @@ class Request(webob.Request):
         """Determine content type of the request body.
 
         Does not do any body introspection, only checks header
+        :param allowed_content_types:
 
         """
         if "Content-Type" not in self.headers:
             return None
 
         content_type = self.content_type
-        allowed_content_types = (allowed_content_types
-                                 or self.default_request_content_types)
+        allowed_content_types = (allowed_content_types or
+                                 self.default_request_content_types)
 
         if content_type not in allowed_content_types:
             raise exception.InvalidContentType(content_type=content_type)
@@ -287,7 +288,12 @@ class Resource(object):
 
     @staticmethod
     def dispatch(obj, action, *args, **kwargs):
-        """Find action-specific method on self and call it."""
+        """Find action-specific method on self and call it.
+        :param kwargs:
+        :param args:
+        :param action:
+        :param obj:
+        """
         try:
             method = getattr(obj, action)
         except AttributeError:
@@ -296,7 +302,9 @@ class Resource(object):
 
     @staticmethod
     def get_action_args(request_environment):
-        """Parse dictionary created by routes library."""
+        """Parse dictionary created by routes library.
+        :param request_environment:
+        """
         args = {}
         try:
             args = request_environment['wsgiorg.routing_args'][1].copy()

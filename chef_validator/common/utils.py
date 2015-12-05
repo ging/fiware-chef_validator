@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 import datetime
 
 from oslo_serialization import jsonutils
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 
 from chef_validator.common import exception
 from chef_validator.common.i18n import _
@@ -41,7 +41,10 @@ class JSONSerializer(object):
 
 class JSONDeserializer(object):
     def dispatch(self, *args, **kwargs):
-        """Find and call local method."""
+        """Find and call local method.
+        :param kwargs:
+        :param args:
+        """
         action = kwargs.pop('action', 'default')
         action_method = getattr(self, str(action), self.default)
         return action_method(*args, **kwargs)

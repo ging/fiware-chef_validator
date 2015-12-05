@@ -13,7 +13,6 @@
 """Tests for :module:'chef_validator.engine.clients.os.nova'."""
 
 import mock
-
 from chef_validator.api.middleware import context
 from chef_validator.clients.nova_client import NovaClient
 from chef_validator.tests.unit.base import ValidatorTestCase
@@ -40,20 +39,20 @@ def dummy_context(user='test_username', tenant_id='test_tenant_id',
 
 class NovaClientTestCase(ValidatorTestCase):
     def setUp(self):
-        """ Setup Environment"""
+        """Setup Environment"""
         super(NovaClientTestCase, self).setUp()
         NovaClient.create_nova_client = mock.MagicMock()
         self.client = NovaClient(dummy_context())
         self.client._client = mock.MagicMock()
 
     def test_list(self):
-        """ Test list function"""
+        """Test list function"""
         dummy_image = mock.MagicMock()
         dummy_image.id = "myid"
         dummy_image.name = "myname"
         exp = [{'id': 'myid', 'name': 'myname'}]
         self.client._client.images.list.return_value = [dummy_image]
-        self.assertEqual(exp,self.client.list())
+        self.assertEqual(exp, self.client.list())
 
     def test_get_image_by_name(self):
         """Test get_image_by_name function"""
@@ -62,7 +61,7 @@ class NovaClientTestCase(ValidatorTestCase):
         dummy_image.name = "myname"
         exp = {'id': 'myid', 'name': 'myname'}
         self.client._client.images.list.return_value = [dummy_image]
-        self.assertEqual(exp,self.client.get_image_by_name("myname"))
+        self.assertEqual(exp, self.client.get_image_by_name("myname"))
 
     def test_get_ip(self):
         """Test get_ip function"""
@@ -87,7 +86,7 @@ class NovaClientTestCase(ValidatorTestCase):
         self.assertEqual(expected, observed)
 
     def test_deploy_machine(self):
-        """ Test deploy_machine function"""
+        """Test deploy_machine function"""
         machine = mock.MagicMock()
         self.client._client.servers.create.return_value = machine
         expected = machine
@@ -96,14 +95,14 @@ class NovaClientTestCase(ValidatorTestCase):
         self.assertEqual(expected, observed)
 
     def test_delete_machine(self):
-        """ Test delete_machine function"""
+        """Test delete_machine function"""
         machine = mock.MagicMock()
         self.client._client.servers.find.return_value = machine
         self.client.delete_machine("mymachine")
         machine.delete.assert_called_once_with()
 
     def tearDown(self):
-        """ Cleanup environment"""
+        """Cleanup environment"""
         super(NovaClientTestCase, self).tearDown()
         self.m.UnsetStubs()
         self.m.ResetAll()

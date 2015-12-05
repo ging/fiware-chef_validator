@@ -6,7 +6,11 @@
 # Hacking already pins down pep8, pyflakes and flake8
 hacking == 0.10.2
 fixtures == 1.3.1
-testtools == 1.8.0
-nose == 1.3.7
 mock == 1.2.0
 mox == 0.5.3
+nose == 1.3.7
+testrepository == 0.0.18
+testscenarios == 0.4
+testtools == 1.8.0
+# Deployment automation
+tox == 2.1.1

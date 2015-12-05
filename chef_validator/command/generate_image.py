@@ -18,7 +18,6 @@ import gc as collector
 import os
 import subprocess
 import sys
-
 from docker import Client as DockerClient
 from glanceclient.v2 import client as GlanceClient
 from oslo_config import cfg
@@ -26,7 +25,9 @@ from oslo_config import cfg
 # If ../chef_validator/__init__.py exists, add ../ to Python search path,
 # so that it will override what happens to be installed in
 # /usr/(local/)lib/python...
-root = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir))
+root = os.path.abspath(
+    os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir)
+)
 if os.path.exists(os.path.join(root, 'chef_validator', '__init__.py')):
     sys.path.insert(0, root)
 
@@ -34,6 +35,7 @@ if 'config_dir' not in cfg.CONF:
     cfg.CONF.config_dir = "/etc/chef_validator"
 
 from chef_validator.common.credentials import get_glance_connection
+
 opts = [
     cfg.StrOpt('url'),
     cfg.StrOpt('image'),
@@ -109,7 +111,9 @@ def dump_docker_image():
 
 
 def upload_glance_image_from_file(gc):
-    """upload file image to glance"""
+    """upload file image to glance
+    :param gc:
+    """
     LOG.debug("Generating Glance Image")
     with open("/tmp/temp.tar", 'rb') as image_tar:
         gc.images.create(

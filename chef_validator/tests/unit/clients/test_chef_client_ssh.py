@@ -11,12 +11,10 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-""" Chef client tests"""
+"""Chef client tests"""
 from __future__ import unicode_literals
-
 import mock
 from oslo_config import cfg
-
 from chef_validator.clients.chef_client_ssh import ChefClientSSH
 from chef_validator.common.exception import SshConnectException
 import chef_validator.tests.unit.base as tb
@@ -29,7 +27,7 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     """Chef Client unit tests"""
 
     def setUp(self):
-        """ Create a chef client"""
+        """Create a chef client"""
         super(ChefClientTestCase, self).setUp()
         self.client = ChefClientSSH("1.1.1.1")
         CONF.set_override('cmd_test', "cmdtest {}", group='clients_chef')
@@ -39,12 +37,12 @@ class ChefClientTestCase(tb.ValidatorTestCase):
         CONF.set_override('cmd_config', "cmdconfig {}", group='clients_chef')
 
     def test_connect_session(self):
-        """ Test client creation"""
+        """Test client creation"""
         self.client.ssh = mock.MagicMock()
         self.assertRaises(SshConnectException, self.client.connect_session)
 
     def test_disconnect_session(self):
-        """ Test stopping and removing a container"""
+        """Test stopping and removing a container"""
         self.client.ssh = mock.MagicMock()
         self.client.disconnect_session()
         self.client.ssh.disconnect.assert_called_once_with()
@@ -53,7 +51,9 @@ class ChefClientTestCase(tb.ValidatorTestCase):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.ssh = mock.MagicMock()
         self.client.container = "1234"
-        self.client.execute_command('cmdinject cmdconfig fakecookbook').AndReturn("Alls good")
+        self.client.execute_command(
+            'cmdinject cmdconfig fakecookbook'
+        ).AndReturn("Alls good")
         self.client.execute_command('cmdlaunch {}').AndReturn("Alls good")
         self.m.ReplayAll()
         obs = self.client.run_deploy("fakecookbook")
@@ -64,7 +64,9 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     def test_run_install(self):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdinstall fakecookbook').AndReturn("Alls good")
+        self.client.execute_command(
+            'cmdinstall fakecookbook'
+        ).AndReturn("Alls good")
         self.m.ReplayAll()
         obs = self.client.run_install("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
@@ -74,7 +76,9 @@ class ChefClientTestCase(tb.ValidatorTestCase):
     def test_run_test(self):
         self.client.execute_command = self.m.CreateMockAnything()
         self.client.container = "1234"
-        self.client.execute_command('cmdtest fakecookbook').AndReturn("Alls good")
+        self.client.execute_command(
+            'cmdtest fakecookbook'
+        ).AndReturn("Alls good")
         self.m.ReplayAll()
         obs = self.client.run_test("fakecookbook")
         expected = "{'response': u'Alls good', 'success': True}"
@@ -85,14 +89,16 @@ class ChefClientTestCase(tb.ValidatorTestCase):
         """Test a command execution in container"""
         self.client.ssh = self.m.CreateMockAnything()
         stdin = mock.MagicMock()
-        self.client.ssh.exec_command(u'mycommand').AndReturn((stdin, "OK", None))
+        self.client.ssh.exec_command(
+            u'mycommand'
+        ).AndReturn((stdin, "OK", None))
         self.m.ReplayAll()
         obs = self.client.execute_command("mycommand")
-        self.assertEqual("OK",obs)
+        self.assertEqual("OK", obs)
         self.m.VerifyAll()
 
     def tearDown(self):
-        """ Cleanup environment"""
+        """Cleanup environment"""
         super(ChefClientTestCase, self).tearDown()
         self.m.UnsetStubs()
         self.m.ResetAll()

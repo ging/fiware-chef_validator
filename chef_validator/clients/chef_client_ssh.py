@@ -12,11 +12,11 @@
 #  under the License.
 
 
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_config import cfg
-
-from chef_validator.common.exception import SshConnectException, CookbookSyntaxException, CookbookDeploymentException, \
-    CookbookInstallException
+from chef_validator.common.exception import \
+    SshConnectException, CookbookSyntaxException, \
+    CookbookDeploymentException, CookbookInstallException
 from chef_validator.common.i18n import _LW
 
 LOG = logging.getLogger(__name__)
@@ -33,16 +33,20 @@ opts = [
 CONF = cfg.CONF
 CONF.register_opts(opts, group="clients_chef")
 
-
 # todo stub for pycrypto dependencies on win
 import os
+
 if 'nt' in os.name:
     class SSHClient(object):
         """SSHClient stub"""
+
         @staticmethod
         def set_missing_host_key_policy(dummy):
-            """set_missing_host_key_policy stub"""
+            """set_missing_host_key_policy stub
+            :param dummy:
+            """
             pass
+
         def disconnect(self):
             pass
 
@@ -54,7 +58,7 @@ else:
 
 
 class ChefClientSSH(object):
-    """ Chef client wrapper"""
+    """Chef client wrapper"""
 
     def __init__(
             self,
@@ -74,7 +78,7 @@ class ChefClientSSH(object):
         self.ssh = None
 
     def cookbook_deploy_test(self, cookbook):
-        """ Try to deploy the given cookbook through an serial connection
+        """Try to deploy the given cookbook through an serial connection
         :param cookbook: cookbook to deploy
         :return: dict message with results
         """
@@ -100,12 +104,12 @@ class ChefClientSSH(object):
                 'success': False,
                 'result': "Error deploying cookbook {}\n".format(cookbook)
             }
-            LOG.error(_LW(msg))
+            LOG.error(_LW("%s") % msg)
         self.disconnect_session()
         return msg
 
     def run_deploy(self, cookbook):
-        """ Run cookbook deployment
+        """Run cookbook deployment
         :param cookbook: cookbook to deploy
         :return msg: dictionary with results and state
         """
@@ -125,12 +129,12 @@ class ChefClientSSH(object):
                 msg['success'] = False
         except Exception as e:
             self.disconnect_session()
-            LOG.error(_LW("Cookbook deployment exception %s" % e))
+            LOG.error(_LW("Cookbook deployment exception %s") % e)
             raise CookbookDeploymentException(cookbook=cookbook)
         return msg
 
     def run_test(self, cookbook):
-        """ Test cookbook syntax
+        """Test cookbook syntax
         :param cookbook: cookbook to test
         :return msg: dictionary with results and state
         """
@@ -146,7 +150,7 @@ class ChefClientSSH(object):
                     msg['success'] = False
         except Exception as e:
             self.disconnect_session()
-            LOG.error(_LW("Cookbook syntax exception %s" % e))
+            LOG.error(_LW("Cookbook syntax exception %s") % e)
             raise CookbookSyntaxException(cookbook=cookbook)
         return msg
 
@@ -167,7 +171,7 @@ class ChefClientSSH(object):
                     msg['success'] = False
         except Exception as e:
             self.disconnect_session()
-            LOG.error(_LW("Chef install exception %s" % e))
+            LOG.error(_LW("Chef install exception %s") % e)
             raise CookbookInstallException(cookbook=cookbook)
         return msg
 
@@ -185,7 +189,7 @@ class ChefClientSSH(object):
                 password=self._password
             )
         except Exception as e:
-            LOG.error(_LW("SSH connect exception %s" % e))
+            LOG.error(_LW("SSH connect exception %s") % e)
             raise SshConnectException(host=self._ip)
 
     def disconnect_session(self):
@@ -194,7 +198,7 @@ class ChefClientSSH(object):
         self.ssh.disconnect()
 
     def execute_command(self, command):
-        """ Execute a command in the given container
+        """Execute a command in the given container
         :param command:  bash command to run
         :return:  execution result
         """

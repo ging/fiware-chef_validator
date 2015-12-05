@@ -25,7 +25,7 @@ class SysLogHandlersTestCase(tb.ValidatorTestCase):
     """Test for standard and RFC compliant Syslog handlers."""
 
     def setUp(self):
-        """ Configure logger"""
+        """Configure logger"""
         super(SysLogHandlersTestCase, self).setUp()
         if sys.platform != 'linux2':
             self.skip("SKIP: This test work on Linux platform only.")

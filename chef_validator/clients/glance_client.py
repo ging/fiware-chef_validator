@@ -13,7 +13,7 @@
 
 import glanceclient
 
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_config import cfg
 
 LOG = logging.getLogger(__name__)

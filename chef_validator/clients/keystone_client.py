@@ -35,5 +35,4 @@ class KeystoneClient(object):
             'auth_url': cfg.CONF.keystone_authtoken.auth_uri,
             'username': cfg.CONF.keystone_authtoken.admin_user,
             'password': cfg.CONF.keystone_authtoken.admin_password,
-            'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name
-            }
+            'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name}

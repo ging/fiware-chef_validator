@@ -17,7 +17,7 @@
 from keystoneclient import exceptions as keystone_exceptions
 from keystoneclient import session
 from webob import exc
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 
 from chef_validator.common.i18n import _LE
 from chef_validator.api.middleware import context
@@ -113,7 +113,10 @@ class KeystonePasswordAuthProtocol(object):
 
 
 def filter_factory(global_conf, **local_conf):
-    """Returns a WSGI filter app for use with paste.deploy."""
+    """Returns a WSGI filter app for use with paste.deploy.
+    :param local_conf:
+    :param global_conf:
+    """
     conf = global_conf.copy()
     conf.update(local_conf)
 

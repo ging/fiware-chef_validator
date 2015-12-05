@@ -12,7 +12,6 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 import sys
-
 from chef_validator.common.i18n import _
 
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
@@ -84,15 +83,18 @@ class AmbiguousNameException(OpenstackException):
 class SshConnectException(OpenstackException):
     msg_fmt = _("The SSH connection to %(host)s could not be stablished.")
 
+
 class SerialConnectException(OpenstackException):
     msg_fmt = _("The Serial connection to %(host)s could not be stablished.")
+
 
 class CookbookInstallException(OpenstackException):
     msg_fmt = _("Error installing cookbook %(cookbook)s")
 
 
 class CookbookSyntaxException(OpenstackException):
-    msg_fmt = _("The provided cookbook syntax is incorrect for cookbook: %(cookbook)s")
+    msg_fmt = _("The provided cookbook syntax is incorrect for "
+                "cookbook: %(cookbook)s")
 
 
 class CookbookDeploymentException(OpenstackException):

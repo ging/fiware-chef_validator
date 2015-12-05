@@ -12,10 +12,9 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 from docker.errors import DockerException, NotFound
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_config import cfg
 from docker import Client as DC
-
 from chef_validator.common.exception import CookbookSyntaxException, \
     CookbookDeploymentException, \
     CookbookInstallException, \
@@ -46,7 +45,10 @@ class DockerClient(object):
             LOG.error(_LE("Docker client error: %s") % e)
             raise e
 
-    def cookbook_deployment_test(self, cookbook, recipe, image=CONF.clients_docker.image):
+    def cookbook_deployment_test(self,
+                                 cookbook,
+                                 recipe,
+                                 image=CONF.clients_docker.image):
         """
         Try to process a cookbook and return results
         :param cookbook: cookbook to deploy
@@ -82,12 +84,12 @@ class DockerClient(object):
                 'success': False,
                 'result': "Error deploying cookbook {}\n".format(cookbook)
             }
-            LOG.error(_LW(msg))
+            LOG.error(_LW("%s") % msg)
         self.remove_container()
         return msg
 
     def run_deploy(self, cookbook, recipe):
-        """ Run cookbook deployment
+        """Run cookbook deployment
         :param cookbook: cookbook to deploy
         :param recipe: recipe to deploy
         :return msg: dictionary with results and state
@@ -105,12 +107,12 @@ class DockerClient(object):
                 msg['success'] = False
         except Exception as e:
             self.remove_container(self.container)
-            LOG.error(_LW("Cookbook deployment exception %s" % e))
+            LOG.error(_LW("Cookbook deployment exception %s") % e)
             raise CookbookDeploymentException(cookbook=cookbook)
         return msg
 
     def run_test(self, cookbook):
-        """ Test cookbook syntax
+        """Test cookbook syntax
         :param cookbook: cookbook to test
         :return msg: dictionary with results and state
         """
@@ -128,7 +130,7 @@ class DockerClient(object):
             LOG.debug(_("Test result: %s") % resp_test)
         except Exception as e:
             self.remove_container(self.container)
-            LOG.error(_LW("Cookbook syntax exception %s" % e))
+            LOG.error(_LW("Cookbook syntax exception %s") % e)
             raise CookbookSyntaxException(cookbook=cookbook)
         return msg
 
@@ -150,7 +152,7 @@ class DockerClient(object):
                     msg['success'] = False
             LOG.debug(_("Install result: %s") % resp_install)
         except Exception as e:
-            LOG.error(_LW("Chef install exception: %s" % e))
+            LOG.error(_LW("Chef install exception: %s") % e)
             self.remove_container(self.container)
             raise CookbookInstallException(cookbook=cookbook)
         return msg
@@ -164,7 +166,7 @@ class DockerClient(object):
         try:
             try:
                 self.dc.remove_container(contname, force=True)
-                LOG.info(_LI('Removing old %s container' % contname))
+                LOG.info(_LI('Removing old %s container') % contname)
             except NotFound:
                 pass
             self.container = self.dc.create_container(
@@ -174,7 +176,7 @@ class DockerClient(object):
             ).get('Id')
             self.dc.start(container=self.container)
         except AttributeError as e:
-            LOG.error(_LW("Error creating container: %s" % e))
+            LOG.error(_LW("Error creating container: %s") % e)
             raise DockerContainerException(image=image)
 
     def remove_container(self, kill=True):
@@ -186,7 +188,7 @@ class DockerClient(object):
             self.dc.remove_container(self.container)
 
     def execute_command(self, command):
-        """ Execute a command in the given container
+        """Execute a command in the given container
         :param command:  bash command to run
         :return:  execution result
         """

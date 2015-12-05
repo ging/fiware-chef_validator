@@ -11,9 +11,9 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-""" Main action mapper"""
+"""Main action mapper"""
 
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_config import cfg
 from webob import exc
 
@@ -34,7 +34,7 @@ class ValidateController(object):
 
     @staticmethod
     def validate(request, body):
-        """ Validate the given cookbook
+        """Validate the given cookbook
         :param request: request context
         :param body: a json with deployment parameters
         :return : a json file with process results
@@ -52,8 +52,10 @@ class ValidateController(object):
             recipe = body['recipe']
         else:
             recipe = "default"
-        LOG.info(_LI('Processing Request for cookbook %s, recipe %s, image %s'
-                     % (cookbook, recipe, image)))
+        LOG.info(
+            _LI('Processing Request for cookbook {cookbook}, recipe {recipe}, '
+                'image {image}').format(cookbook=cookbook, recipe=recipe,
+                                        image=image))
         res = ValidateEngine().validate_cookbook(
             cookbook, recipe, image, request
         )

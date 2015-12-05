@@ -17,7 +17,7 @@ from keystoneclient.auth.identity import v3
 from keystoneclient.auth import token_endpoint
 from oslo_config import cfg
 from oslo_context import context
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_middleware import request_id as oslo_request_id
 from oslo_utils import importutils
 import oslo_messaging
@@ -183,6 +183,8 @@ class ContextMiddleware(wsgi.Middleware):
     def make_context(self, *args, **kwargs):
         """
         Create a context with the given arguments.
+        :param kwargs:
+        :param args:
         """
         return self.ctxcls(*args, **kwargs)
 
@@ -190,6 +192,7 @@ class ContextMiddleware(wsgi.Middleware):
         """
         Extract any authentication information in the request and
         construct an appropriate context from it.
+        :param req:
         """
         headers = req.headers
         environ = req.environ
@@ -238,6 +241,8 @@ class ContextMiddleware(wsgi.Middleware):
 def ContextMiddleware_filter_factory(global_conf, **local_conf):
     """
     Factory method for paste.deploy
+    :param local_conf:
+    :param global_conf:
     """
     conf = global_conf.copy()
     conf.update(local_conf)

@@ -14,12 +14,11 @@
 import mox
 
 from oslo_config import cfg
-from oslo_log import log
+from chef_validator.common import log
 import testtools
 import fixtures
 
 CONF = cfg.CONF
-log.register_options(CONF)
 log.setup(CONF, 'chef_validator')
 
 
@@ -27,9 +26,9 @@ class ValidatorTestCase(testtools.TestCase):
     """Default test environment setter"""
 
     def setUp(self):
-        """ setup logger fixture"""
+        """setup logger fixture"""
         super(ValidatorTestCase, self).setUp()
-        #self.useFixture(fixtures.FakeLogger())
+        # self.useFixture(fixtures.FakeLogger())
         self.useFixture(fixtures.WarningsCapture())
         self.m = mox.Mox()
         self.addCleanup(self.m.UnsetStubs)

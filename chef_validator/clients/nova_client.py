@@ -13,10 +13,12 @@
 
 from novaclient import client as nc
 from novaclient import exceptions
-from oslo_log import log as logging
+from chef_validator.common import log as logging
 from oslo_config import cfg
 
-from chef_validator.common.exception import AmbiguousNameException, ImageNotFound
+from chef_validator.common.exception \
+    import AmbiguousNameException, \
+    ImageNotFound
 
 LOG = logging.getLogger(__name__)
 opts = [
@@ -80,7 +82,7 @@ class NovaClient(object):
         try:
             self._client.servers.find(name=server)
             exists = True
-        except exceptions.NotFound as ex:
+        except exceptions.NotFound:
             exists = False
         return exists
 
@@ -108,5 +110,5 @@ class NovaClient(object):
         return self._client.servers.ips(self._machine)['public'][0]['addr']
 
     def get_serial(self):
-        "return a serial console url"
+        """return a serial console url"""
         return self._machine.get_serial_console('serial')

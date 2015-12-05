@@ -14,13 +14,11 @@
 
 import inspect
 import re
-
 import six
 from oslo_config import cfg
-from oslo_log import log
+from chef_validator.common import log
 from oslo_messaging._drivers import common as rpc_common
 import webob
-
 import chef_validator.api.middleware.fault as fault
 from chef_validator.common import exception as chef_validator_exc
 from chef_validator.common.i18n import _
@@ -43,7 +41,9 @@ class FaultMiddlewareTest(ValidatorTestCase):
     def test_disguised_http_exception_with_newline(self):
         wrapper = fault.FaultWrapper(None)
         newline_error = ErrorWithNewline('Error with \n newline')
-        msg = wrapper._error(chef_validator_exc.HTTPExceptionDisguise(newline_error))
+        msg = wrapper._error(chef_validator_exc.HTTPExceptionDisguise(
+            newline_error)
+        )
         error = {'code': 400,
                  'error': {'message': 'Error with \n newline',
                            'traceback': None,
@@ -74,12 +74,17 @@ class FaultMiddlewareTest(ValidatorTestCase):
         wrapper = fault.FaultWrapper(None)
         newline_error = ErrorWithNewline(
             'Error with \n newline\nTraceback (most recent call last):\nFoo')
-        msg = wrapper._error(chef_validator_exc.HTTPExceptionDisguise(newline_error))
+        msg = wrapper._error(chef_validator_exc.HTTPExceptionDisguise(
+            newline_error)
+        )
         error = {u'code': 400,
-                 u'error': {u'message': u'Error with \n newline',
-                            u'traceback': u'Traceback (most recent call last):\nFoo',
-                            u'type': 'ErrorWithNewline'},
-                 u'explanation': 'The server could not comply with the request since it is either malformed or otherwise incorrect.',
+                 u'error':
+                     {u'message': u'Error with \n newline',
+                      u'traceback': u'Traceback (most recent call last):\nFoo',
+                      u'type': 'ErrorWithNewline'},
+                 u'explanation':
+                     'The server could not comply with the request since it '
+                     'is either malformed or otherwise incorrect.',
                  u'title': 'Bad Request'}
         expected = {
             'success': False,
@@ -101,12 +106,15 @@ class FaultMiddlewareTest(ValidatorTestCase):
 
     def test_openstack_exception_with_kwargs(self):
         wrapper = fault.FaultWrapper(None)
-        msg = wrapper._error(chef_validator_exc.InvalidContentType(content_type='a'))
+        msg = wrapper._error(chef_validator_exc.InvalidContentType(
+            content_type='a')
+        )
         error = {u'code': 500,
                  u'error': {u'message': u'Invalid content type a',
                             u'traceback': 'None\n',
                             u'type': 'InvalidContentType'},
-                 u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
+                 u'explanation': 'The server has either erred or is incapable '
+                                 'of performing the requested operation.',
                  u'title': 'Internal Server Error'}
         expected = {
             'success': False,
@@ -133,7 +141,8 @@ class FaultMiddlewareTest(ValidatorTestCase):
                  u'error': {u'message': u'An unknown exception occurred',
                             u'traceback': 'None\n',
                             u'type': 'OpenstackException'},
-                 u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
+                 u'explanation': 'The server has either erred or is incapable '
+                                 'of performing the requested operation.',
                  u'title': 'Internal Server Error'}
         expected = {
             'success': False,
@@ -202,10 +211,14 @@ class FaultMiddlewareTest(ValidatorTestCase):
         expected_message, expected_traceback = six.text_type(
             remote_error).split('\n', 1)
         error = {u'code': 500,
-                 u'error': {u'message': u'Invalid content type %(content_type)s',
-                            u'traceback': u'InvalidContentType: Invalid content type a\n',
-                            u'type': 'InvalidContentType'},
-                 u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
+                 u'error': {
+                     u'message': u'Invalid content type %(content_type)s',
+                     u'traceback': u'InvalidContentType: Invalid content '
+                                   u'type a\n',
+                     u'type': 'InvalidContentType'},
+                 u'explanation': 'The server has either erred or is '
+                                 'incapable of performing the requested '
+                                 'operation.',
                  u'title': 'Internal Server Error'}
         expected = {
             'success': False,
@@ -261,11 +274,11 @@ class FaultMiddlewareTest(ValidatorTestCase):
 
     def test_all_remote_exceptions(self):
         for name, obj in inspect.getmembers(
-                chef_validator_exc, lambda x: inspect.isclass(x) and issubclass(
-                    x, chef_validator_exc.OpenstackException)):
-
+                chef_validator_exc, lambda x: inspect.isclass(x) and
+                issubclass(x, chef_validator_exc.OpenstackException)):
             if '__init__' in obj.__dict__:
-                if obj == chef_validator_exc.OpenstackException:  # manually ignore baseclass
+                if obj == chef_validator_exc.OpenstackException:  #
+                    # manually ignore baseclass
                     continue
                 elif obj == chef_validator_exc.Error:
                     error = obj('Error')
@@ -304,7 +317,8 @@ class FaultMiddlewareTest(ValidatorTestCase):
 
         msg = wrapper._error(StackNotFoundChild(stack_name='a'))
         error = {u'code': 404,
-                 u'error': {u'message': u'The %(entity)s (%(name)s) could not be found.',
+                 u'error': {u'message': u'The %(entity)s (%(name)s) could '
+                                        u'not be found.',
                             u'traceback': 'None\n',
                             u'type': 'StackNotFoundChild'},
                  u'explanation': 'The resource could not be found.',
@@ -338,7 +352,8 @@ class FaultMiddlewareTest(ValidatorTestCase):
                  u'error': {u'message': u'A message',
                             u'traceback': 'None\n',
                             u'type': 'NotMappedException'},
-                 u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
+                 u'explanation': 'The server has either erred or is incapable '
+                                 'of performing the requested operation.',
                  u'title': 'Internal Server Error'}
         expected = {
             'success': False,
@@ -374,10 +389,15 @@ class FaultMiddlewareTest(ValidatorTestCase):
             remote_error).split('\n', 1)
         error = {u'code': 500,
                  u'error': {
-                     u'message': u"Remote error: StackNotFoundChild The %(entity)s (%(name)s) could not be found.\n[u'StackNotFoundChild: The %(entity)s (%(name)s) could not be found.\\n'].",
+                     u'message': u"Remote error: StackNotFoundChild "
+                                 u"The %(entity)s (%(name)s) could not be "
+                                 u"found.\n[u'StackNotFoundChild: "
+                                 u"The %(entity)s (%(name)s) "
+                                 u"could not be found.\\n'].",
                      u'traceback': 'None\n',
                      u'type': 'RemoteError'},
-                 u'explanation': 'The server has either erred or is incapable of performing the requested operation.',
+                 u'explanation': 'The server has either erred or is incapable '
+                                 'of performing the requested operation.',
                  u'title': 'Internal Server Error'}
         expected = {
             'success': False,

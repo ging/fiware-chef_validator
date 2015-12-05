@@ -12,27 +12,24 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-""" Tests for chef_validator.common.utils """
+"""Tests for chef_validator.common.utils """
 from __future__ import unicode_literals
-
 import mock
-
 from chef_validator.common.utils import JSONDeserializer
 from chef_validator.common.utils import JSONSerializer
 from chef_validator.tests.unit.base import ValidatorTestCase
 
 
 class JSONDeserializerTestCase(ValidatorTestCase):
-    """ Tests for class JSONDeserializer """
+    """Tests for class JSONDeserializer """
 
     def setUp(self):
-        """ Create a JSONDeserializer instance """
+        """Create a JSONDeserializer instance """
         super(JSONDeserializerTestCase, self).setUp()
         self.item = JSONDeserializer()
 
-
     def test_dispatch(self):
-        """ Tests for method dispatch """
+        """Tests for method dispatch """
         input = mock.MagicMock()
         input.body = '{"MyInput": "mydata"}'
         expected = {u'body': {u'MyInput': u'mydata'}}
@@ -40,7 +37,7 @@ class JSONDeserializerTestCase(ValidatorTestCase):
         self.assertEqual(expected, observed)
 
     def test_deserialize(self):
-        """ Tests for method deserialize """
+        """Tests for method deserialize """
         self.item.external = mock.MagicMock()
         input = mock.MagicMock()
         input.body = '{"MyInput": "mydata"}'
@@ -50,7 +47,7 @@ class JSONDeserializerTestCase(ValidatorTestCase):
         self.assertEqual(expected, observed)
 
     def test_default(self):
-        """ Tests for method default """
+        """Tests for method default """
         self.item.external = mock.MagicMock()
         request = mock.MagicMock()
         request.body = '{"MyInput": "mydata"}'
@@ -60,33 +57,32 @@ class JSONDeserializerTestCase(ValidatorTestCase):
         self.assertEqual(expected, observed)
 
     def tearDown(self):
-        """ Cleanup the JSONDeserializer instance """
+        """Cleanup the JSONDeserializer instance """
         super(JSONDeserializerTestCase, self).tearDown()
         self.m.UnsetStubs()
         self.m.ResetAll()
 
 
 class JSONSerializerTestCase(ValidatorTestCase):
-    """ Tests for class JSONSerializer """
+    """Tests for class JSONSerializer """
 
     def setUp(self):
-        """ Create a JSONSerializer instance """
+        """Create a JSONSerializer instance """
         super(JSONSerializerTestCase, self).setUp()
         self.item = JSONSerializer()
 
-
     def test_default(self):
-        """ Tests for method default """
+        """Tests for method default """
         input = "MyInput"
         response = mock.MagicMock()
         result = input
-        expected = "\""+input+"\""
+        expected = "\"" + input + "\""
         self.item.default(response, result)
         observed = response.body
         self.assertEqual(expected, observed)
 
     def tearDown(self):
-        """ Cleanup the JSONSerializer instance """
+        """Cleanup the JSONSerializer instance """
         super(JSONSerializerTestCase, self).tearDown()
         self.m.UnsetStubs()
         self.m.ResetAll()

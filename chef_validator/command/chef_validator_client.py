@@ -11,23 +11,32 @@
 #  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #  License for the specific language governing permissions and limitations
 #  under the License.
-""" A very simple example client for Chef Validator """
+"""A very simple example client for Chef Validator"""
 
 import json
 import pprint
 import os
 import sys
-
 from eventlet.green import urllib2
-from oslo_log import log as logging
 from oslo_config import cfg
 
+# If ../chef_validator/__init__.py exists, add ../ to Python search path,
+# so that it will override what happens to be installed in
+# /usr/(local/)lib/python...
+root = os.path.abspath(
+    os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir)
+)
+if os.path.exists(os.path.join(root, 'chef_validator', '__init__.py')):
+    sys.path.insert(0, root)
 
 # simple local logging
+from chef_validator.common import log as logging
+
 LOG = logging.getLogger(__name__)
-logging.register_options(cfg.CONF)
+
 cfg.CONF.debug = True
-cfg.CONF.logging_default_format_string = "%(levelname)s (%(module)s:%(lineno)d) %(message)s"
+cfg.CONF.logging_default_format_string = \
+    "%(levelname)s (%(module)s:%(lineno)d) %(message)s"
 logging.setup(cfg.CONF, 'chef_validator_client')
 
 # local configuration
@@ -49,9 +58,11 @@ VALIDATOR_URL = os.environ.get('CHEF_VALIDATOR_URL', CONF.validator_url)
 
 
 def client():
-    """ Sends a static request based on commandline arguments,
-    logs the response """
-    if USERNAME is None or PASSWORD is None or VALIDATOR_URL is None or not VALIDATOR_URL.endswith("validate"):
+    """Sends static request based on cmdline arguments, logs the response"""
+    if USERNAME is None \
+            or PASSWORD is None \
+            or VALIDATOR_URL is None \
+            or not VALIDATOR_URL.endswith("validate"):
         raise Exception("Needed valid username, password and validator_url")
     # sample request data
     postdata = {
