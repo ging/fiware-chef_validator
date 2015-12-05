@@ -64,9 +64,9 @@ class DockerClient(object):
         cmd_inject = CONF.clients_chef.cmd_inject.format(config=json_cont)
         self.execute_command(cmd_inject)
 
-        msg['install'] = self.run_install(cookbook, recipe)
+        msg['install'] = self.run_install(cookbook)
         b_success &= msg['install']['success']
-        msg['test'] = self.run_test(cookbook, recipe)
+        msg['test'] = self.run_test(cookbook)
         b_success &= msg['test']['success']
         msg['deploy'] = self.run_deploy(cookbook, recipe)
         b_success &= msg['deploy']['success']
@@ -109,14 +109,14 @@ class DockerClient(object):
             raise CookbookDeploymentException(cookbook=cookbook)
         return msg
 
-    def run_test(self, cookbook, recipe):
+    def run_test(self, cookbook):
         """ Test cookbook syntax
         :param cookbook: cookbook to test
         :return msg: dictionary with results and state
         """
         try:
             cmd_test = CONF.clients_chef.cmd_test.format(
-                cookbook_name=cookbook, recipe_name=recipe)
+                cookbook_name=cookbook)
             resp_test = self.execute_command(cmd_test)
             msg = {
                 'success': True,
@@ -132,14 +132,14 @@ class DockerClient(object):
             raise CookbookSyntaxException(cookbook=cookbook)
         return msg
 
-    def run_install(self, cookbook, recipe):
+    def run_install(self, cookbook):
         """Run download and install command
         :param cookbook: cookbook to process
         :return msg: operation result
         """
         try:
             cmd_install = CONF.clients_chef.cmd_install.format(
-                cookbook_name=cookbook, recipe_name=recipe)
+                cookbook_name=cookbook)
             resp_install = self.execute_command(cmd_install)
             msg = {
                 'success': True,

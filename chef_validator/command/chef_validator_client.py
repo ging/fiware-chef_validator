@@ -51,7 +51,7 @@ VALIDATOR_URL = os.environ.get('CHEF_VALIDATOR_URL', CONF.validator_url)
 def client():
     """ Sends a static request based on commandline arguments,
     logs the response """
-    if USERNAME is None or PASSWORD is None or VALIDATOR_URL is None:
+    if USERNAME is None or PASSWORD is None or VALIDATOR_URL is None or not VALIDATOR_URL.endswith("validate"):
         raise Exception("Needed valid username, password and validator_url")
     # sample request data
     postdata = {

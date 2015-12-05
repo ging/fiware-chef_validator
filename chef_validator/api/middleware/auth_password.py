@@ -65,7 +65,6 @@ class KeystonePasswordAuthProtocol(object):
             LOG.error(_LE("Context build failed"))
             return self._reject_request(env, start_response, auth_url)
         env.update(self._build_user_headers(auth_ref))
-
         return self.app(env, start_response)
 
     @staticmethod

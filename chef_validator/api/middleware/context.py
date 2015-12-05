@@ -193,7 +193,6 @@ class ContextMiddleware(wsgi.Middleware):
         """
         headers = req.headers
         environ = req.environ
-
         try:
             username = None
             password = None
@@ -204,7 +203,6 @@ class ContextMiddleware(wsgi.Middleware):
                 password = headers.get('X-Auth-Key')
             elif headers.get('X-Auth-EC2-Creds') is not None:
                 aws_creds = headers.get('X-Auth-EC2-Creds')
-
             user_id = headers.get('X-User-Id')
             token = headers.get('X-Auth-Token')
             tenant = headers.get('X-Project-Name')
@@ -234,6 +232,7 @@ class ContextMiddleware(wsgi.Middleware):
             region_name=region_name,
             auth_plugin=auth_plugin
         )
+        LOG.debug("Context successfully injected")
 
 
 def ContextMiddleware_filter_factory(global_conf, **local_conf):

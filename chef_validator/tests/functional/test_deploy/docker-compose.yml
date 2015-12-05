@@ -1,0 +1,33 @@
+keystone:
+  build: ./docker-keystone
+  hostname: 0.0.0.0
+  container_name: keystone
+  ports:
+    - "5000:5000"
+    - "35357:35357"
+  links:
+    - mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: reverse
+    OS_TENANT_NAME: admin
+    OS_USERNAME: admin
+    OS_PASSWORD: admin
+
+mysql:
+  build: ./docker-mysql
+  container_name: mysql
+  hostname: mysql
+  ports:
+    - "3306:3306"
+  environment:
+    MYSQL_ROOT_PASSWORD: reverse
+
+#rabbitmq:
+#  image: rabbitmq:3.5
+#  hostname: rabbitmq
+#  container_name: rabbitmq
+#  environment:
+#    - RABBITMQ_ERLANG_COOKIE="reverse"
+#  ports:
+#    - "5672:5672"
+#    - "15672:15672"

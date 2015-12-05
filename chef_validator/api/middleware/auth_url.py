@@ -38,7 +38,8 @@ class AuthUrlFilter(wsgi.Middleware):
             importutils.import_module(auth_token_module)
             return cfg.CONF.keystone_authtoken.auth_uri
 
-    def _validate_auth_url(self, auth_url):
+    @staticmethod
+    def _validate_auth_url(auth_url):
         """Validate auth_url to ensure it can be used."""
         if not auth_url:
             raise exc.HTTPBadRequest(_('Request missing required header '

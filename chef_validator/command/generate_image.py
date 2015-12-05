@@ -13,19 +13,27 @@
 #  under the License.
 """Helper tool to generate a valid chef-solo glance image in docker format"""
 
-from __future__ import unicode_literals
-
 import logging
 import gc as collector
 import os
 import subprocess
+import sys
 
 from docker import Client as DockerClient
 from glanceclient.v2 import client as GlanceClient
 from oslo_config import cfg
 
-from chef_validator.common.credentials import get_glance_connection
+# If ../chef_validator/__init__.py exists, add ../ to Python search path,
+# so that it will override what happens to be installed in
+# /usr/(local/)lib/python...
+root = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir))
+if os.path.exists(os.path.join(root, 'chef_validator', '__init__.py')):
+    sys.path.insert(0, root)
 
+if 'config_dir' not in cfg.CONF:
+    cfg.CONF.config_dir = "/etc/chef_validator"
+
+from chef_validator.common.credentials import get_glance_connection
 opts = [
     cfg.StrOpt('url'),
     cfg.StrOpt('image'),
@@ -44,6 +52,7 @@ def dock_image():
     status = True
     dc = DockerClient(base_url=CONF.clients_docker.url)
     # inject config files dir to syspath
+    print CONF.config_dir
     wp = os.path.abspath(CONF.config_dir)
     sys.path.insert(0, wp)
     os.chdir(wp)
@@ -83,9 +92,9 @@ def upload_to_glance():
         if CONF.tag in im.name:
             LOG.debug("Deleting old Glance Image")
             gc.images.delete(im.id)
-    # Memory starvation even with intermediate file
-    # dump_docker_image()
-    # upload_glance_image_from_file(gc)
+    # FIXME Memory starvation even with intermediate file
+    dump_docker_image()
+    upload_glance_image_from_file(gc)
     cmdline_upload()
 
 
@@ -121,7 +130,8 @@ def main():
     """
     ok = dock_image()
     if ok:
-        upload_to_glance()
+        cmdline_upload()
+        # upload_to_glance()
 
 
 if __name__ == '__main__':
